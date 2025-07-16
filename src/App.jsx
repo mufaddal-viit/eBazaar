@@ -24,31 +24,36 @@ const Layout = () => {
   );
 };
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <Layout />,
+      children: [
+        {
+          path: "/",
+          element: <Home />,
+          loader: productsData,
+        },
+        {
+          path: "/product/:id",
+          element: <Product />,
+        },
+        {
+          path: "/cart",
+          element: <Cart />,
+        },
+        {
+          path: "login",
+          element: <Login />,
+        },
+      ],
+    },
+  ],
   {
-    path: "/",
-    element: <Layout />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-        loader: productsData,
-      },
-      {
-        path: "/product/:id",
-        element: <Product />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "login",
-        element: <Login />,
-      },
-    ],
-  },
-]);
+    basename: "/eBazaar", // 👈 VERY IMPORTANT
+  }
+);
 
 function App() {
   return (
