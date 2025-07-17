@@ -42,7 +42,7 @@ const router = createBrowserRouter(
         },
         {
           path: "/product/:id",
-          element: <Prodbg-gray-300uct />,
+          element: <Product />,
         },
         {
           path: "/cart",
