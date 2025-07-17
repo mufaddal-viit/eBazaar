@@ -25,16 +25,19 @@ const CartItem = () => {
           <div className="border-b-2 pb-4 flex gap-4 p-1" key={product._id}>
             <figure className=" w-32 md:w-40">
               <img
+                className="max-w-full block rounded-md object-cover"
                 src={product.image}
                 alt="productImg"
-                className="max-w-full block rounded-md object-cover"
               />
             </figure>
             <div className="flex flex-col w-1/2 gap-4 py-3 text-gray-700">
               <h2 className="text-lg md:text-2xl">{product.title}</h2>
-              <p className="md:text-lg">${product.price * product.quantity}</p>
-              <div className="flex gap-3 border w-fit items-center">
+              <p className="md:text-lg font-bold">
+                ${product.price * product.quantity}
+              </p>
+              <div className="flex gap-3  w-fit items-center">
                 <button
+                  className="border h-8 font-bold rounded text-lg flex items-center justify-center p-2.5 hover:bg-gray-700 hover:text-white cursor-pointer duration-300 active:bg-black"
                   onClick={() =>
                     dispatch(
                       decrementQuantity({
@@ -47,12 +50,12 @@ const CartItem = () => {
                       })
                     )
                   }
-                  className="border h-5 font-normal text-lg flex items-center justify-center px-2 hover:bg-gray-700 hover:text-white cursor-pointer duration-300 active:bg-black"
                 >
                   -
                 </button>
-                <span className="text-sm">{product.quantity}</span>
+                <span className="font-bold text-xl">{product.quantity}</span>
                 <button
+                  className="border h-8 font-bold rounded text-lg flex items-center justify-center px-2 hover:bg-gray-700 hover:text-white cursor-pointer duration-300 active:bg-black"
                   onClick={() =>
                     dispatch(
                       increamentQuantity({
@@ -65,18 +68,17 @@ const CartItem = () => {
                       })
                     )
                   }
-                  className="border h-5 font-normal text-lg flex items-center justify-center px-2 hover:bg-gray-700 hover:text-white cursor-pointer duration-300 active:bg-black"
                 >
                   +
                 </button>
               </div>
               <button
+                className="bg-red-500 text-white py-2 mt-2 w-16 md:w-20 text-xs md:text-sm rounded hover:bg-transparent
+            border border-red-500 hover:text-red-500 transition-all duration-200"
                 onClick={() =>
                   dispatch(deleteItem(product._id)) &
                   toast.error(`${product.title} is removed`)
                 }
-                className="bg-red-500 text-white py-2 mt-2 w-16 md:w-20 text-xs md:text-sm rounded hover:bg-transparent
-            border border-red-500 hover:text-red-500 transition-all duration-200"
               >
                 Remove
               </button>

@@ -44,23 +44,27 @@ const Banner = () => {
   };
 
   return (
-    <div className="relative mt-14 h-screen w-full">
+    <div className="relative mt-14 overflow-x-hidden mx-auto max-w-screen-xl w-full">
+      {" "}
       <div
         className="flex transition-transform duration-500 ease-out h-full"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
         {data.map((slide, index) => (
-          <div
-            key={index}
-            className="min-w-full h-[550px] relative overflow-hidden"
-          >
+          <div key={index} className="min-w-full h-[350px] relative">
+            {/* <a
+              href=""
+              target="_blank"
+              rel="noopener noreferrer"
+            > */}
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-2xl"
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-white">
+            {/* </a> */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center text-white pointer-events-auto">
                 <h2 className="text-4xl font-bold mb-2">{slide.title}</h2>
                 <p className="text-xl mb-6">{slide.subtitle}</p>
                 <Link

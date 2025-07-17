@@ -36,8 +36,13 @@ const router = createBrowserRouter(
           loader: productsData,
         },
         {
+          path: "/shop",
+          element: <Home />,
+          loader: productsData,
+        },
+        {
           path: "/product/:id",
-          element: <Product />,
+          element: <Prodbg-gray-300uct />,
         },
         {
           path: "/cart",
@@ -51,14 +56,14 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: "/eBazaar", // 👈 VERY IMPORTANT
+    basename: "/eBazaar",
   }
 );
 
 function App() {
   return (
     <>
-      {/* <h1>Hello sir</h1> */}
+      {/* <h1>Hello</h1> */}
       <RouterProvider router={router} />
     </>
   );

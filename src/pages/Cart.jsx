@@ -33,13 +33,13 @@ const Cart = () => {
     }
   };
   return (
-    <div className="mt-24 flex flex-col items-center min-h-screen px-1">
-      <div className="flex gap-3 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
+    <div className=" flex flex-col items-center min-h-screen px-1 bg-gray-300">
+      <div className=" mt-30 flex gap-3 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
         <div className="w-5/6 sm:w-1/2  md:w-2/3">
           <CartItem />
         </div>
         <div className="w-5/6 sm:w-1/2 pl-5 md:pl-0 md:w-1/3 text-sm lg:text-base flex flex-col gap-3 items-center text-gray-800  pt-3">
-          <h2 className="w-full font-titleFont font-semibold  text-gray-900 text-2xl mb-3">
+          <h2 className="w-full text-left pl-2.5 font-titleFont font-semibold  text-gray-900 text-2xl mb-3">
             Cart Total
           </h2>
           <div className="w-full flex items-center gap-3 mb-1">
@@ -60,7 +60,7 @@ const Cart = () => {
           </div>
 
           <button
-            className="bg-gray-900 text-white w-full py-2"
+            className="bg-gray-900 text-white w-full py-2 rounded"
             onClick={handleCheckout}
           >
             Proceed to Checkout
