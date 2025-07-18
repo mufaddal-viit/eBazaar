@@ -52,6 +52,16 @@ const router = createBrowserRouter(
           path: "login",
           element: <Login />,
         },
+        {
+          path: "not-available",
+          element: (
+            <div className="flex items-center justify-center min-h-screen">
+              <h1 className="text-center text-3xl text-gray-400 font-bold border-2 border-gray-400 rounded-2xl p-4">
+                Page Under Construction
+              </h1>
+            </div>
+          ),
+        },
       ],
     },
   ],

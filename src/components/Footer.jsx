@@ -20,7 +20,7 @@ const Footer = () => {
                 (item) => (
                   <li key={item}>
                     <Link
-                      to="#"
+                      to="not-available"
                       className="hover:text-white transition-colors duration-300"
                     >
                       {item}
