@@ -7,31 +7,32 @@ const Banner = () => {
   const data = [
     {
       image:
-        "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?q=80&w=1744&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=600",
+      title: "Denim Stylish Jacket ",
+      title1: "Jean's stylish Jacket",
+      subtitle: "Sky Blue Soft Denim",
+      cta: "Check Now",
+    },
+    {
+      image:
+        "https://images.unsplash.com/photo-1647243498368-8c19cf82031a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
       title: "Summer Collection",
       subtitle: "Discover our latest styles",
       cta: "Shop Now",
     },
     {
       image:
-        "https://images.unsplash.com/photo-1521566652839-697aa473761a?q=80&w=1742&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1673310535178-7c6069f28917?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjV8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
       title: "New Arrivals",
       subtitle: "Fresh looks for the season",
       cta: "Explore",
     },
     {
       image:
-        "https://images.unsplash.com/photo-1481437156560-3205f6a55735?q=80&w=1790&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1673356301861-d555ce5972ef?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
       title: "Limited Edition",
       subtitle: "Exclusive pieces, limited time",
       cta: "Get It Now",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      title: "Clearance Sale",
-      subtitle: "Up to 70% off selected items",
-      cta: "Shop Sale",
     },
   ];
 
@@ -44,7 +45,7 @@ const Banner = () => {
   };
 
   return (
-    <div className="relative mt-14 overflow-x-hidden mx-auto max-w-screen-xl w-full">
+    <div className="relative mt-17 overflow-x-hidden mx-auto max-w-screen-xl w-full">
       {" "}
       <div
         className="flex transition-transform duration-500 ease-out h-full"
@@ -68,7 +69,14 @@ const Banner = () => {
                 <h2 className="text-4xl font-bold mb-2">{slide.title}</h2>
                 <p className="text-xl mb-6">{slide.subtitle}</p>
                 <Link
-                  to="/#shop"
+                  to={
+                    slide.title1
+                      ? `/product/${String(slide.title1)
+                          .toLocaleLowerCase()
+                          .split(" ")
+                          .join("")}`
+                      : "/#shop"
+                  }
                   className=" bg-white text-black font-bold py-3 px-6 rounded-full hover:bg-opacity-90 transition-colors"
                 >
                   {slide.cta}

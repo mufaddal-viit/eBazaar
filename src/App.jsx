@@ -23,7 +23,6 @@ const Layout = () => {
     </>
   );
 };
-
 const router = createBrowserRouter(
   [
     {
@@ -43,6 +42,7 @@ const router = createBrowserRouter(
         {
           path: "/product/:id",
           element: <Product />,
+          loader: productsData,
         },
         {
           path: "/cart",

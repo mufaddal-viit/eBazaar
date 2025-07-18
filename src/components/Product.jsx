@@ -1,18 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { MdOutlineStar } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/bazarSlice";
 import { ToastContainer, toast } from "react-toastify";
+import { useLoaderData } from "react-router-dom";
 
 const Product = () => {
   const dispatch = useDispatch();
   const [details, setDetails] = useState({});
   let [baseQty, setBaseQty] = useState(1);
   const location = useLocation();
+  const unique_id = useParams();
+  const response = useLoaderData();
+
   useEffect(() => {
-    setDetails(location.state.item);
-  }, [location]);
+    if (location?.state?.item) {
+      console.log("Got item from location.state");
+      setDetails(location.state.item);
+    } else {
+      if (response?.data) {
+        const matchedItems = response.data.filter((item) => {
+          const normalizedTitle = String(item.title)
+            .toLowerCase()
+            .replace(/\s+/g, "") // better than split/join
+            .trim();
+
+          return normalizedTitle === unique_id.id;
+        });
+
+        if (matchedItems.length > 0) {
+          setDetails(matchedItems[0]); // Only set the first matched item
+          console.log("Matched Items: ", matchedItems);
+        }
+      }
+    }
+  }, [location, response, unique_id.id]);
 
   return (
     <div className="mt-24 min-h-[70vh]">

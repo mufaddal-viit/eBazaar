@@ -51,7 +51,7 @@ const Header = () => {
   );
 
   return (
-    <header className="fixed inset-x-0 top-1.5 z-10 bg-white/60 backdrop-blur-md shadow-md border-b border-white/30 rounded-lg">
+    <header className="fixed inset-x-0 top-0 z-10 bg-white/60 backdrop-blur-md shadow-md border-b border-white/30 rounded-lg">
       <div className="mx-auto px-4 sm:px-6 lg:px-8 border-b-2 rounded-lg">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

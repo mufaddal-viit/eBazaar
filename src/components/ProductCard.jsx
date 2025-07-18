@@ -14,7 +14,6 @@ const ProductCard = ({ product }) => {
     return String(_id).toLowerCase().split(" ").join("");
   };
   const rootId = _idString(_id);
-
   const handleDetails = () => {
     navigate(`/product/${rootId}`, {
       state: {
