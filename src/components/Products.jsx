@@ -1,11 +1,15 @@
 import React from "react";
 import ProductCard from "./ProductCard";
+import { useOutletContext } from "react-router-dom";
 
 const Products = ({ products }) => {
+  const { dark } = useOutletContext(); // Get the dark mode state
   return (
     <div
       id="shop"
-      className=" border-4 border-gray-950 bg-gray-300  rounded-2xl mx-auto max-w-screen-xl w-full p-1 m-3"
+      className={` ${
+        !dark ? "bg-gray-300" : "bg-gray-700"
+      }  rounded-2xl mx-auto max-w-screen-xl w-full p-1 m-3`}
     >
       <div className="text-center mt-6 mb-6">
         <h2 className="text-3xl font-bold mb-4">Our Products</h2>

@@ -34,10 +34,10 @@ const ProductCard = ({ product }) => {
           className="lg:w-full h-full object-cover group-hover:scale-110 duration-500"
         />
       </figure>
-      <div className="info border border-b-0 px-2 py-4 w-full flex flex-col gap-0.5 ">
+      <div className=" border border-b-0 px-2 py-4 w-full flex flex-col gap-0.5 ">
         <div className="flex justify-between">
           <div>
-            <h2>{product.title.substring(0, 15)}</h2>
+            <h2>{product.title.substring(0, 19)}</h2>
           </div>
           <div className="flex justify-center gap-2 text-sm relative overflow-hidden w-28 hover:cursor-pointer">
             <div className="flex gap-2 relative justify-end transform group-hover:translate-x-24 duration-500">

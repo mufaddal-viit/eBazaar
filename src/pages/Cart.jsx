@@ -5,8 +5,9 @@ import CartItem from "../components/CartItem";
 import { ToastContainer, toast } from "react-toastify";
 import StripeCheckout from "react-stripe-checkout";
 import axios from "axios";
-
+import { useOutletContext } from "react-router-dom";
 const Cart = () => {
+  const { dark } = useOutletContext(); // Get the dark mode state
   const productData = useSelector((state) => state.bazar.productData);
   const [totalAmt, setTotalAmt] = useState(null);
   const [payNow, setPayNow] = useState(false);
@@ -33,30 +34,59 @@ const Cart = () => {
     }
   };
   return (
-    <div className=" flex flex-col items-center min-h-screen px-1 bg-gray-300">
-      <div className=" mt-30 flex gap-3 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
+    <div
+      className={`flex flex-col items-center min-h-screen px-1 ${
+        !dark ? "bg-gray-300" : "bg-gray-700"
+      }`}
+    >
+      <div className=" mt-30 flex gap-10 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
         <div className="w-5/6 sm:w-1/2  md:w-2/3">
           <CartItem />
         </div>
         <div className="w-5/6 sm:w-1/2 pl-5 md:pl-0 md:w-1/3 text-sm lg:text-base flex flex-col gap-3 items-center text-gray-800  pt-3">
-          <h2 className="w-full text-left pl-2.5 font-titleFont font-semibold  text-gray-900 text-2xl mb-3">
+          <h2
+            className={`w-full text-left pl-2.5 font-titleFont font-semibold text-2xl mb-3 ${
+              dark ? "text-white" : "text-gray-900"
+            }`}
+          >
             Cart Total
           </h2>
           <div className="w-full flex items-center gap-3 mb-1">
-            <span className="w-1/5">Subtotal</span>
-            <p className="w-4/5 text-lg">${totalAmt}</p>
-          </div>
-          <div className="flex gap-3 w-full mb-4">
-            <span className="w-1/5">Shipping Add</span>
-            <p className="w-4/5">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam
-              consequuntur hic unde porro culpa dolores reprehenderit provident{" "}
+            <span className={`${dark ? "text-white" : "text-black"} w-1/5`}>
+              Subtotal
+            </span>
+            <p
+              className={`w-4/5 text-lg ${dark ? "text-white" : "text-black"}`}
+            >
+              ${totalAmt}
             </p>
           </div>
-          <div className="border border-gray-600 w-full px-2 mb-4"></div>
+          <div className=" gap-3 w-full mb-4">
+            <span className={` ${dark ? "text-white" : "text-black"} w-1/5`}>
+              Shipping Add
+            </span>
+            <input type="text" placeholder="write address here"  className="border-1 rounded-md p-1 mt-1 text-center"/>
+          </div>
+          <div
+            className={`border w-full px-2 mb-4 ${
+              dark ? "border-gray-300" : "border-gray-600"
+            }`}
+          ></div>
           <div className="flex  justify-between w-full items-center">
-            <span className="text-lg font-semibold">Total</span>
-            <p className="text-lg font-semibold">$ {totalAmt}</p>
+            <span
+              className={`text-lg font-semibold ${
+                dark ? "text-white" : "text-black"
+              }`}
+            >
+              Total
+            </span>
+            <p
+              className={`text-lg font-semibold ${
+                dark ? "text-white" : "text-black"
+              }`}
+            >
+              ${totalAmt}
+            </p>
           </div>
 
           <button

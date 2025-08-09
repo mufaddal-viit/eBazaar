@@ -12,15 +12,27 @@ import Cart from "./pages/Cart";
 import productsData from "./api/Api";
 import Product from "./components/Product";
 import Login from "./pages/Login";
+import { useState } from "react";
 
 const Layout = () => {
+  const [dark, setdark] = useState(false);
+  const handleclick = () => {
+    setdark((prev) => !prev);
+  };
   return (
-    <>
-      <Header />
+    <div
+      className={`${
+        !dark
+          ? "bg-gradient-to-b from-violet-300 via-blue-100 to-blue-400"
+          : "bg-gray-700"
+      }`}
+    >
+      <Header dark={dark} handleclick={handleclick} />
       <ScrollRestoration />
-      <Outlet />
+      {/* <Outlet /> */}
+      <Outlet context={{ dark }} />
       <Footer />
-    </>
+    </div>
   );
 };
 const router = createBrowserRouter(
@@ -69,7 +81,6 @@ const router = createBrowserRouter(
     basename: "/eBazaar",
   }
 );
-
 function App() {
   return (
     <>

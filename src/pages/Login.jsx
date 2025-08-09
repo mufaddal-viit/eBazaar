@@ -10,8 +10,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { addUser, removeUser } from "../redux/bazarSlice";
 import { useNavigate } from "react-router-dom";
 import app from "../firebase.config";
+import { useOutletContext } from "react-router-dom";
 
 const Login = () => {
+  const { dark } = useOutletContext(); // Get the dark mode state
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const dispatch = useDispatch();
@@ -48,7 +50,11 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-300">
+    <div
+      className={`flex items-center justify-center min-h-screen ${
+        !dark ? "bg-gray-300" : "bg-gray-700"
+      }`}
+    >
       <div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
         <h2 className=" text-center mt-6 text-3xl font-extrabold text-gray-900">
           Welcome to eBazaar

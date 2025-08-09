@@ -38,9 +38,9 @@ const Product = () => {
   }, [location, response, unique_id.id]);
 
   return (
-    <div className="mt-24 min-h-[70vh]">
+    <div className="min-h-[70vh]">
       <div className="max-w-screen-xl mx-auto my-10 flex flex-col items-center sm:flex-row gap-10 px-4">
-        <div className="w-full sm:w-2/5 relative">
+        <div className="mt-10 w-full sm:w-2/5 relative">
           <img
             className="w-full h-[350px] lg:h-[550px] object-cover rounded-lg shadow-md"
             src={details.image}
