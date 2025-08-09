@@ -51,21 +51,28 @@ const Cart = () => {
           >
             Cart Total
           </h2>
-          <div className="w-full flex items-center gap-3 mb-1">
-            <span className={`${dark ? "text-white" : "text-black"} w-1/5`}>
+          <div className="w-full flex items-center mb-1">
+            <span className={`${dark ? "text-white" : "text-black"}`}>
               Subtotal
             </span>
             <p
-              className={`w-4/5 text-lg ${dark ? "text-white" : "text-black"}`}
+              className={`text-lg ml-auto ${
+                dark ? "text-white" : "text-black"
+              }`}
             >
               ${totalAmt}
             </p>
           </div>
+
           <div className=" gap-3 w-full mb-4">
             <span className={` ${dark ? "text-white" : "text-black"} w-1/5`}>
               Shipping Add
             </span>
-            <input type="text" placeholder="write address here"  className="border-1 rounded-md p-1 mt-1 text-center"/>
+            <input
+              type="text"
+              placeholder="write address here"
+              className="border-1 rounded-md p-1 mt-1 text-center"
+            />
           </div>
           <div
             className={`border w-full px-2 mb-4 ${
