@@ -1,12 +1,36 @@
-# React + Vite
+# 🛍️ E-Commerce Clothing App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack e-commerce web application for clothing, built with **React.js**, **Node.js**, **TailwindCSS**, and **MongoDB**.  
+The app provides a seamless shopping experience with features like product browsing, cart management, secure checkout, and an admin dashboard for inventory management.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+### 👤 User
+- User authentication and authorization (JWT-based login & signup). Used Firebase.
+- Browse clothing products with responsive design.
+- Add/remove products from cart and wishlist.
+- Secure checkout with payment gateway integration (Stripe).
+- View order history and track orders.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### ⚡ Performance & Security
+- State management with Redux Toolkit.
+- Optimized performance with code splitting, lazy loading, and caching.
+- Secure APIs with JWT and middleware-based role validation.
+- Deployed on AWS with scalable infrastructure.
+
+---
+
+## 🖥️ Tech Stack
+
+**Frontend:** React.js, TailwindCSS, Redux Toolkit  
+**Database:** Firebase  
+**Authentication:** JWT, bcrypt, Passport.js  
+**Payment Gateway:** Stripe / PayPal  
+**Deployment:**  GitHub Actions CI/CD  
+
+---
+
+## 📂 Project Structure
+
