@@ -4,42 +4,80 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import {
   createBrowserRouter,
+  isRouteErrorResponse,
+  Link,
   Outlet,
   RouterProvider,
   ScrollRestoration,
+  useRouteError,
 } from "react-router-dom";
 import Cart from "./pages/Cart";
 import productsData from "./api/Api";
 import Product from "./components/Product";
 import Login from "./pages/Login";
-import { useState } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const RouteError = () => {
+  const error = useRouteError();
+
+  let title = "Page unavailable";
+  let message = "We could not load this page. Please try again.";
+
+  if (isRouteErrorResponse(error)) {
+    title = `${error.status} ${error.statusText}`;
+    message = "The requested page is unavailable at the moment.";
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  return (
+    <section className="section-shell min-h-[55vh] flex items-center justify-center">
+      <div className="surface-card rounded-3xl p-8 text-center max-w-xl fade-slide-up">
+        <p className="uppercase tracking-[0.18em] text-xs muted-text mb-3">
+          Navigation Error
+        </p>
+        <h1 className="section-title mb-3">{title}</h1>
+        <p className="muted-text mb-6">{message}</p>
+        <Link to="/" className="btn-primary inline-flex items-center justify-center">
+          Return Home
+        </Link>
+      </div>
+    </section>
+  );
+};
 
 const Layout = () => {
-  const [dark, setdark] = useState(false);
-  const handleclick = () => {
-    setdark((prev) => !prev);
-  };
   return (
-    <div
-      className={`${
-        !dark
-          ? "bg-gradient-to-b from-violet-300 via-blue-100 to-blue-400"
-          : "bg-gray-700"
-      }`}
-    >
-      <Header dark={dark} handleclick={handleclick} />
+    <div className="app-shell">
+      <div className="announcement-bar">
+        Complimentary shipping on orders above $120
+      </div>
+      <Header />
       <ScrollRestoration />
-      {/* <Outlet /> */}
-      <Outlet context={{ dark }} />
+      <main className="page-content">
+        <Outlet />
+      </main>
       <Footer />
+      <ToastContainer
+        position="top-right"
+        autoClose={2400}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+      />
     </div>
   );
 };
+
 const router = createBrowserRouter(
   [
     {
       path: "/",
       element: <Layout />,
+      errorElement: <RouteError />,
       children: [
         {
           path: "/",
@@ -61,17 +99,24 @@ const router = createBrowserRouter(
           element: <Cart />,
         },
         {
-          path: "login",
+          path: "/login",
           element: <Login />,
         },
         {
-          path: "not-available",
+          path: "/not-available",
           element: (
-            <div className="flex items-center justify-center min-h-screen">
-              <h1 className="text-center text-3xl text-gray-400 font-bold border-2 border-gray-400 rounded-2xl p-4">
-                Page Under Construction
-              </h1>
-            </div>
+            <section className="section-shell min-h-[55vh] flex items-center justify-center">
+              <div className="surface-card rounded-3xl p-8 text-center max-w-xl fade-slide-up">
+                <p className="uppercase tracking-[0.18em] text-xs muted-text mb-3">
+                  Coming Soon
+                </p>
+                <h1 className="section-title mb-3">This page is under construction</h1>
+                <p className="muted-text">
+                  We are building this part of eBazaar and it will be available in
+                  an upcoming release.
+                </p>
+              </div>
+            </section>
           ),
         },
       ],
@@ -81,13 +126,9 @@ const router = createBrowserRouter(
     basename: "/eBazaar",
   }
 );
+
 function App() {
-  return (
-    <>
-      {/* <h1>Hello</h1> */}
-      <RouterProvider router={router} />
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

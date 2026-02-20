@@ -1,154 +1,96 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { HiOutlineArrowLeft } from "react-icons/hi";
-import { Link, useOutletContext } from "react-router-dom";
+import { ArrowLeft, Minus, Plus, Trash2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   decrementQuantity,
   deleteItem,
   increamentQuantity,
 } from "../redux/bazarSlice";
-import { ToastContainer, toast } from "react-toastify";
+import { formatCurrency } from "../utils/product";
 
 const CartItem = () => {
-  const { dark } = useOutletContext(); // Get the dark mode state
   const productData = useSelector((state) => state.bazar.productData);
   const dispatch = useDispatch();
 
-  return (
-    <div className="w-full md:pr-14 h-full flex flex-col gap-4 sm:border-r-2">
-      <h2
-        className={`text-xl font-titleFont border-b-2 py-2 ${
-          dark ? "text-white" : "text-gray-700"
-        }`}
-      >
-        Your Shopping Cart
-      </h2>
+  if (!productData.length) {
+    return (
+      <div className="surface-card rounded-3xl p-8 text-center h-full flex flex-col items-center justify-center">
+        <p className="uppercase tracking-[0.18em] text-xs muted-text mb-2">Cart Empty</p>
+        <h2 className="section-title mb-3">Start building your look</h2>
+        <p className="muted-text mb-5 max-w-sm">
+          Your shopping bag is waiting. Add your favorite pieces and come back here.
+        </p>
+        <Link to="/shop" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft size={16} />
+          Continue Shopping
+        </Link>
+      </div>
+    );
+  }
 
-      {productData.length > 0 ? (
-        productData.map((product) => (
-          <div
-            className={`border-b-2 pb-4 flex gap-4 p-1 ${
-              dark ? "border-gray-600" : "border-gray-300"
-            }`}
-            key={product._id}
-          >
-            <figure className="w-32 md:w-40">
-              <img
-                className="max-w-full block rounded-md object-cover"
-                src={product.image}
-                alt="productImg"
-              />
-            </figure>
-            <div
-              className={`flex flex-col w-1/2 gap-4 py-3 ${
-                dark ? "text-white" : "text-gray-700"
-              }`}
-            >
-              <h2 className="text-lg md:text-2xl">{product.title}</h2>
-              <p className="md:text-lg font-bold">
-                ${product.price * product.quantity}
+  return (
+    <div className="space-y-4">
+      {productData.map((product) => (
+        <article
+          key={product._id}
+          className="surface-card rounded-3xl p-3 sm:p-4 flex flex-col sm:flex-row gap-4"
+        >
+          <figure className="w-full sm:w-32 md:w-36 h-44 sm:h-32 md:h-36 rounded-2xl overflow-hidden bg-[#f3eadf] border border-[#1f1a1520] shrink-0">
+            <img
+              className="h-full w-full object-cover"
+              src={product.image}
+              alt={product.title}
+            />
+          </figure>
+
+          <div className="flex-1 flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div>
+                <h3 className="display-font text-2xl leading-tight">{product.title}</h3>
+                <p className="text-sm muted-text mt-1 line-clamp-2">{product.description}</p>
+              </div>
+              <p className="text-lg font-semibold text-[#1f1a15] whitespace-nowrap">
+                {formatCurrency(product.price * product.quantity)}
               </p>
-              <div className="flex gap-3 w-fit items-center">
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-auto">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#1f1a1528] bg-[#f8f2e7] px-3 py-2">
                 <button
-                  className={`border h-8 font-bold rounded text-lg flex items-center justify-center p-2.5 cursor-pointer duration-300
-                    ${
-                      dark
-                        ? "hover:bg-white hover:text-black border-white"
-                        : "hover:bg-gray-700 hover:text-white border-gray-700"
-                    } active:bg-black`}
-                  onClick={() =>
-                    dispatch(
-                      decrementQuantity({
-                        _id: product._id,
-                        title: product.title,
-                        image: product.image,
-                        price: product.price,
-                        quantity: 1,
-                        description: product.description,
-                      })
-                    )
-                  }
+                  type="button"
+                  className="h-8 w-8 rounded-full border border-[#1f1a152b] bg-white grid place-content-center"
+                  onClick={() => dispatch(decrementQuantity({ _id: product._id }))}
+                  aria-label="Decrease quantity"
                 >
-                  -
+                  <Minus size={14} />
                 </button>
-                <span className="font-bold text-xl">{product.quantity}</span>
+                <span className="w-7 text-center font-semibold">{product.quantity}</span>
                 <button
-                  className={`border h-8 font-bold rounded text-lg flex items-center justify-center px-2 cursor-pointer duration-300
-                    ${
-                      dark
-                        ? "hover:bg-white hover:text-black border-white"
-                        : "hover:bg-gray-700 hover:text-white border-gray-700"
-                    } active:bg-black`}
-                  onClick={() =>
-                    dispatch(
-                      increamentQuantity({
-                        _id: product._id,
-                        title: product.title,
-                        image: product.image,
-                        price: product.price,
-                        quantity: 1,
-                        description: product.description,
-                      })
-                    )
-                  }
+                  type="button"
+                  className="h-8 w-8 rounded-full border border-[#1f1a152b] bg-white grid place-content-center"
+                  onClick={() => dispatch(increamentQuantity({ _id: product._id }))}
+                  aria-label="Increase quantity"
                 >
-                  +
+                  <Plus size={14} />
                 </button>
               </div>
+
               <button
-                className="bg-red-500 text-white py-2 mt-2 w-16 md:w-20 text-xs md:text-sm rounded hover:bg-transparent
-                border border-red-500 hover:text-red-500 transition-all duration-200"
+                type="button"
+                className="inline-flex items-center gap-2 rounded-full border border-[#ce6f5e56] bg-[#fef2ef] px-4 py-2 text-sm font-semibold text-[#a84735] hover:bg-[#fee7e1]"
                 onClick={() => {
                   dispatch(deleteItem(product._id));
-                  toast.error(`${product.title} is removed`);
+                  toast.error(`${product.title} removed from cart`);
                 }}
               >
+                <Trash2 size={15} />
                 Remove
               </button>
             </div>
           </div>
-        ))
-      ) : (
-        <div className="h-full w-full">
-          <div className="w-fit">
-            <Link to="/">
-              <div
-                className={`flex items-center gap-1 transition-all duration-300 hover:scale-110 ${
-                  dark
-                    ? "text-gray-400 hover:text-white"
-                    : "text-gray-400 hover:text-black"
-                }`}
-              >
-                <span className="text-2xl">
-                  <HiOutlineArrowLeft />
-                </span>
-                <p className="text-2xl font-bold">Go Shopping</p>
-              </div>
-            </Link>
-          </div>
-
-          <p
-            className={`mt-10 w-full h-full grid place-content-center italic transition-all duration-300 hover:scale-110 ${
-              dark ? "text-gray-300" : "text-gray-400"
-            }`}
-          >
-            Your Cart is Empty
-          </p>
-        </div>
-      )}
-
-      <ToastContainer
-        position="top-left"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
+        </article>
+      ))}
     </div>
   );
 };

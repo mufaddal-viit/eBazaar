@@ -1,93 +1,113 @@
-import "./newnav.css";
-import { Link } from "react-router-dom";
-import { FiShoppingCart } from "react-icons/fi";
-import { AiOutlineUser } from "react-icons/ai";
-import { HiOutlineMenuAlt3 } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import PropTypes from "prop-types";
+import { ShoppingBag, UserRound, X } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { formatCurrency } from "../utils/product";
 
-function Navbar() {
+const navLinkClass = ({ isActive }) =>
+  `w-full rounded-2xl px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] transition-colors duration-200 ${
+    isActive
+      ? "bg-[#1f1a15] text-[#f6f2ea]"
+      : "bg-[#f4ede0] text-[#3f342a] hover:bg-[#eadfce]"
+  }`;
+
+const Navbar = ({ isOpen, onClose, navItems, cartCount, cartSubtotal }) => {
   const navigate = useNavigate();
-  const handleNavigateCart = () => navigate("/cart");
-  const productData = useSelector((state) => state.bazar.productData);
-  const [ischecked, setIschecked] = useState(false);
 
-  const handleCheckboxChange = (event) => {
-    const checked = event.target.checked;
-    setIschecked(checked);
-  };
-  const handleChange = () => {
-    setIschecked(!ischecked);
-  };
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <div className="menu-container">
-      <input
-        type="checkbox"
-        id="openmenu"
-        className="hamburger-checkbox"
-        checked={ischecked}
-        onChange={handleCheckboxChange}
-      />
+    <div
+      className="fixed inset-0 z-50 bg-[#1f1a1552] backdrop-blur-[2px] lg:hidden"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <aside
+        className="absolute right-0 top-0 h-full w-[86vw] max-w-sm bg-[#f8f2e8] p-5 shadow-2xl fade-slide-up"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="display-font text-3xl leading-none">Navigate</p>
+            <p className="text-xs uppercase tracking-[0.18em] muted-text">Quick access</p>
+          </div>
+          <button
+            type="button"
+            className="rounded-full border border-[#1f1a152f] p-2"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-      <div className="hamburger-icon">
-        <label htmlFor="openmenu" id="hamburger-label">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </label>
-      </div>
-
-      <div className="menu-pane">
-        <nav>
-          <ul className="menu-links">
-            <li>
-              <Link
-                onClick={handleChange}
-                to="/"
-                className="text-lg font-bold hover:text-gray-800 transition"
-              >
-                HOME
-              </Link>
-            </li>
-            <li>
-              <Link
-                onClick={handleChange}
-                to="/shop"
-                className="text-lg font-bold hover:text-gray-800 transition"
-              >
-                SHOP
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/login"
-                className="text-lg hover:text-gray-800"
-                onClick={handleChange}
-              >
-                <AiOutlineUser className="w-6 h-6" />
-              </Link>
-            </li>
-            <li
-              onClick={() => {
-                handleChange();
-                handleNavigateCart();
-              }}
-              className="relative cursor-pointer"
+        <nav className="space-y-3">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              onClick={onClose}
+              className={navLinkClass}
             >
-              <FiShoppingCart className="w-6 h-6" />
-              {productData.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {productData.length}
-                </span>
-              )}
-            </li>
-          </ul>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
-      </div>
+
+        <div className="surface-card rounded-3xl p-4 mt-7">
+          <p className="text-xs uppercase tracking-[0.16em] muted-text mb-3">Cart Snapshot</p>
+          <div className="flex items-center justify-between text-sm">
+            <span>Items</span>
+            <span className="font-semibold">{cartCount}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm mt-2">
+            <span>Subtotal</span>
+            <span className="font-semibold">{formatCurrency(cartSubtotal)}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate("/login");
+            }}
+            className="btn-secondary inline-flex items-center justify-center gap-2 !rounded-2xl"
+          >
+            <UserRound size={16} />
+            Account
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate("/cart");
+            }}
+            className="btn-primary inline-flex items-center justify-center gap-2 !rounded-2xl"
+          >
+            <ShoppingBag size={16} />
+            Cart
+          </button>
+        </div>
+      </aside>
     </div>
   );
-}
+};
+
+Navbar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  navItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      to: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  cartCount: PropTypes.number.isRequired,
+  cartSubtotal: PropTypes.number.isRequired,
+};
 
 export default Navbar;

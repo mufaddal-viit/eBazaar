@@ -1,116 +1,130 @@
-import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+const slides = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1600&q=80",
+    eyebrow: "Spring Studio",
+    title: "Tailored layers for elevated city wear",
+    subtitle: "Refined silhouettes with a relaxed, wearable finish.",
+    ctaLabel: "Explore Collection",
+    ctaTo: "/shop",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1600&q=80",
+    eyebrow: "Modern Essentials",
+    title: "Minimal staples crafted for everyday movement",
+    subtitle: "Build outfits around textures, clean cuts, and timeless tones.",
+    ctaLabel: "Shop Essentials",
+    ctaTo: "/shop",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80",
+    eyebrow: "New Drop",
+    title: "Runway mood with effortless day comfort",
+    subtitle: "Fresh arrivals designed to move from day plans to evening edits.",
+    ctaLabel: "View New Arrivals",
+    ctaTo: "/shop",
+  },
+];
 
 const Banner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const data = [
-    {
-      image:
-        "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=600",
-      title: "Denim Stylish Jacket ",
-      title1: "Jean's stylish Jacket",
-      subtitle: "Sky Blue Soft Denim",
-      cta: "Check Now",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1647243498368-8c19cf82031a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
-      title: "Summer Collection",
-      subtitle: "Discover our latest styles",
-      cta: "Shop Now",
-    },
-    {
-      image:
-        "https://plus.unsplash.com/premium_photo-1673310535178-7c6069f28917?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjV8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
-      title: "New Arrivals",
-      subtitle: "Fresh looks for the season",
-      cta: "Explore",
-    },
-    {
-      image:
-        "https://plus.unsplash.com/premium_photo-1673356301861-d555ce5972ef?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fGNsb3RoaW5nJTIwYnJhbmR8ZW58MHx8MHx8fDA%3D",
-      title: "Limited Edition",
-      subtitle: "Exclusive pieces, limited time",
-      cta: "Get It Now",
-    },
-  ];
 
-  const prevSlide = () => {
-    setCurrentSlide(currentSlide === 0 ? data.length - 1 : currentSlide - 1);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
   };
 
-  const nextSlide = () => {
-    setCurrentSlide(currentSlide === data.length - 1 ? 0 : currentSlide + 1);
+  const goNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const goPrevious = () => {
+    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   return (
-    <div className="relative mt-17 overflow-x-hidden mx-auto max-w-screen-xl w-full">
-      {" "}
-      <div
-        className="flex transition-transform duration-500 ease-out h-full"
-        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-      >
-        {data.map((slide, index) => (
-          <div key={index} className="min-w-full h-[350px] relative">
-            {/* <a
-              href=""
-              target="_blank"
-              rel="noopener noreferrer"
-            > */}
+    <section className="section-shell pt-4 sm:pt-6">
+      <div className="relative overflow-hidden rounded-[2rem] surface-card min-h-[500px] sm:min-h-[560px]">
+        {slides.map((slide, index) => (
+          <article
+            key={slide.title}
+            className={`absolute inset-0 transition-opacity duration-700 ${
+              currentSlide === index ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover rounded-2xl"
+              className="h-full w-full object-cover"
             />
-            {/* </a> */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center text-white pointer-events-auto">
-                <h2 className="text-4xl font-bold mb-2">{slide.title}</h2>
-                <p className="text-xl mb-6">{slide.subtitle}</p>
-                <Link
-                  to={
-                    slide.title1
-                      ? `/product/${String(slide.title1)
-                          .toLocaleLowerCase()
-                          .split(" ")
-                          .join("")}`
-                      : "/#shop"
-                  }
-                  className=" bg-white text-black font-bold py-3 px-6 rounded-full hover:bg-opacity-90 transition-colors"
-                >
-                  {slide.cta}
-                </Link>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1f1a15cc] via-[#1f1a1578] to-[#1f1a1520]" />
+            <div className="relative z-10 h-full flex items-center px-6 sm:px-10 lg:px-16">
+              <div className="max-w-2xl text-[#f6f2ea] fade-slide-up">
+                <p className="uppercase tracking-[0.22em] text-xs sm:text-sm mb-5 text-[#f3e7ce]">
+                  {slide.eyebrow}
+                </p>
+                <h1 className="editorial-heading mb-5">{slide.title}</h1>
+                <p className="text-sm sm:text-lg text-[#f3e7ce] mb-8 max-w-xl">
+                  {slide.subtitle}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link to={slide.ctaTo} className="btn-primary inline-flex">
+                    {slide.ctaLabel}
+                  </Link>
+                  <Link to="/not-available" className="btn-secondary inline-flex text-[#f6f2ea] !border-[#f6f2ea66] !bg-[#ffffff1c]">
+                    Editorial Picks
+                  </Link>
+                </div>
               </div>
             </div>
-            <button
-              onClick={prevSlide}
-              className=" cursor-pointer absolute top-1/2 left-4 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 transition-colors"
-            >
-              <ChevronLeft className="w-6 h-6 text-black" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className=" cursor-pointer absolute top-1/2 right-4 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 transition-colors"
-            >
-              <ChevronRight className="w-6 h-6 text-black" />
-            </button>
+          </article>
+        ))}
 
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {data.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full ${
-                    currentSlide === index ? "bg-blue-300" : "bg-white"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        ))}{" "}
+        <button
+          type="button"
+          onClick={goPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-[#fffdf8d4] p-2.5 text-[#1f1a15] hover:bg-white"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-[#fffdf8d4] p-2.5 text-[#1f1a15] hover:bg-white"
+          aria-label="Next slide"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+          {slides.map((slide, index) => (
+            <button
+              key={slide.eyebrow}
+              type="button"
+              aria-label={`Go to slide ${index + 1}`}
+              onClick={() => goToSlide(index)}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                currentSlide === index ? "w-10 bg-[#f6f2ea]" : "w-2.5 bg-[#f6f2ea88]"
+              }`}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

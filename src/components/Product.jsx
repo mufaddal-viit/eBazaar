@@ -1,139 +1,156 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import { MdOutlineStar } from "react-icons/md";
+import { useEffect, useMemo, useState } from "react";
+import { Heart, Minus, Plus, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { Link, useLoaderData, useLocation, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import { addToCart } from "../redux/bazarSlice";
-import { ToastContainer, toast } from "react-toastify";
-import { useLoaderData } from "react-router-dom";
+import { findProductBySlug, formatCurrency } from "../utils/product";
 
 const Product = () => {
   const dispatch = useDispatch();
-  const [details, setDetails] = useState({});
-  let [baseQty, setBaseQty] = useState(1);
+  const products = useLoaderData() ?? [];
   const location = useLocation();
-  const unique_id = useParams();
-  const response = useLoaderData();
+  const { id } = useParams();
+  const [details, setDetails] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (location?.state?.item) {
-      console.log("Got item from location.state");
       setDetails(location.state.item);
-    } else {
-      if (response?.data) {
-        const matchedItems = response.data.filter((item) => {
-          const normalizedTitle = String(item.title)
-            .toLowerCase()
-            .replace(/\s+/g, "") // better than split/join
-            .trim();
-
-          return normalizedTitle === unique_id.id;
-        });
-
-        if (matchedItems.length > 0) {
-          setDetails(matchedItems[0]); // Only set the first matched item
-          console.log("Matched Items: ", matchedItems);
-        }
-      }
+      return;
     }
-  }, [location, response, unique_id.id]);
+
+    setDetails(findProductBySlug(products, id));
+  }, [id, location?.state, products]);
+
+  const oldPrice = useMemo(() => {
+    if (!details) {
+      return 0;
+    }
+
+    return Number(details.oldPrice) || Number(details.price) * 1.2;
+  }, [details]);
+
+  if (!details) {
+    return (
+      <section className="section-shell min-h-[55vh] flex items-center justify-center">
+        <div className="surface-card rounded-3xl p-8 text-center max-w-xl">
+          <p className="uppercase tracking-[0.18em] text-xs muted-text mb-3">Product Unavailable</p>
+          <h1 className="section-title mb-3">We could not find this product</h1>
+          <p className="muted-text mb-6">
+            The item may have been removed or the link is outdated.
+          </p>
+          <Link to="/shop" className="btn-primary inline-flex">
+            Back to Shop
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  const handleAddToCart = () => {
+    dispatch(
+      addToCart({
+        _id: details._id,
+        title: details.title,
+        image: details.image,
+        price: details.price,
+        quantity,
+        description: details.description,
+      })
+    );
+
+    toast.success(`${details.title} added to cart`);
+  };
 
   return (
-    <div className="min-h-[70vh]">
-      <div className="max-w-screen-xl mx-auto my-10 flex flex-col items-center sm:flex-row gap-10 px-4">
-        <div className="mt-10 w-full sm:w-2/5 relative">
+    <section className="section-shell py-8">
+      <div className="surface-card rounded-[2rem] p-4 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-[1.05fr,1fr] gap-8 lg:gap-10">
+        <div className="rounded-[1.6rem] overflow-hidden bg-[#efe7da] border border-[#1f1a1520] min-h-[420px]">
           <img
-            className="w-full h-[350px] lg:h-[550px] object-cover rounded-lg shadow-md"
             src={details.image}
             alt={details.title}
+            className="w-full h-full object-cover"
           />
-          <div className="absolute top-4 right-0">
-            {details.isNew && (
-              <p className="bg-black text-white font-semibold font-titleFont px-6 py-1 rounded-l-lg">
-                Sale
-              </p>
-            )}
-          </div>
         </div>
-        <div className="w-full sm:w-3/5 flex flex-col justify-center gap-8">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-2">
-              {details.title}
-            </h2>
-            <div className="flex items-center gap-4">
-              <p className="line-through text-base text-gray-500">
-                ${details.oldPrice}
-              </p>
-              <p className="text-2xl font-medium text-gray-900">
-                ${details.price}
-              </p>
-            </div>
+
+        <div className="flex flex-col">
+          <p className="uppercase tracking-[0.18em] text-xs muted-text mb-3">{details.category}</p>
+          <h1 className="editorial-heading text-[clamp(2rem,3.5vw,3.4rem)] mb-4 leading-[0.95]">
+            {details.title}
+          </h1>
+          <p className="muted-text text-sm sm:text-base leading-relaxed mb-6">{details.description}</p>
+
+          <div className="flex flex-wrap items-end gap-3 mb-6">
+            <span className="display-font text-4xl leading-none">
+              {formatCurrency(details.price)}
+            </span>
+            <span className="text-sm line-through muted-text">{formatCurrency(oldPrice)}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, index) => (
-                <MdOutlineStar key={index} />
-              ))}
+
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <div className="inline-flex items-center gap-3 rounded-full border border-[#1f1a1526] bg-[#f9f2e7] px-3 py-2">
+              <button
+                type="button"
+                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                className="h-8 w-8 rounded-full border border-[#1f1a152f] bg-white grid place-content-center"
+                aria-label="Decrease quantity"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="w-8 text-center font-semibold">{quantity}</span>
+              <button
+                type="button"
+                onClick={() => setQuantity((prev) => prev + 1)}
+                className="h-8 w-8 rounded-full border border-[#1f1a152f] bg-white grid place-content-center"
+                aria-label="Increase quantity"
+              >
+                <Plus size={14} />
+              </button>
             </div>
-            <p className="text-sm text-gray-500">(1 Customer review)</p>
-          </div>
-          <p className="text-base text-gray-600">{details.description}</p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex gap-3 items-center justify-between text-gray-500 border border-gray-300 rounded p-3">
-              <p className="text-sm ">Quantity</p>
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <button
-                  onClick={() => setBaseQty(Math.max(1, baseQty - 1))}
-                  className="border h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors duration-300"
-                >
-                  -
-                </button>
-                <span>{baseQty}</span>
-                <button
-                  onClick={() => setBaseQty(baseQty + 1)}
-                  className="border h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors duration-300"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+
             <button
-              onClick={() => {
-                dispatch(
-                  addToCart({
-                    _id: details._id,
-                    title: details.title,
-                    image: details.image,
-                    price: details.price,
-                    quantity: baseQty,
-                    description: details.description,
-                  })
-                );
-                toast.success(`${details.title} is added`);
-              }}
-              className="bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors duration-300"
+              type="button"
+              onClick={handleAddToCart}
+              className="btn-primary inline-flex items-center gap-2"
             >
-              Add to Cart
+              Add to cart
+            </button>
+            <button
+              type="button"
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <Heart size={16} />
+              Save
             </button>
           </div>
-          <p className="text-sm text-gray-500">
-            Category:{" "}
-            <span className="font-medium capitalize">{details.category}</span>
-          </p>
+
+          <div className="grid sm:grid-cols-3 gap-3 mt-auto">
+            <article className="rounded-2xl border border-[#1f1a1520] bg-[#faf5ec] p-3">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <Truck size={15} />
+                Delivery
+              </p>
+              <p className="text-xs muted-text mt-1">Ships in 2-4 business days.</p>
+            </article>
+            <article className="rounded-2xl border border-[#1f1a1520] bg-[#faf5ec] p-3">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <RotateCcw size={15} />
+                Returns
+              </p>
+              <p className="text-xs muted-text mt-1">Easy 7-day return window.</p>
+            </article>
+            <article className="rounded-2xl border border-[#1f1a1520] bg-[#faf5ec] p-3">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <ShieldCheck size={15} />
+                Guarantee
+              </p>
+              <p className="text-xs muted-text mt-1">Quality checked before dispatch.</p>
+            </article>
+          </div>
         </div>
       </div>
-      <ToastContainer
-        position="top-left"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </div>
+    </section>
   );
 };
 

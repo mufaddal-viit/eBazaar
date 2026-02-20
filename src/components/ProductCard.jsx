@@ -1,84 +1,104 @@
-import React from "react";
-import { BsArrowBarRight } from "react-icons/bs";
+import PropTypes from "prop-types";
+import { Eye, ShoppingBag } from "lucide-react";
 import { useDispatch } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
-import { addToCart } from "../redux/bazarSlice";
 import { toast } from "react-toastify";
+import { addToCart } from "../redux/bazarSlice";
+import { formatCurrency, slugifyTitle } from "../utils/product";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const _id = product.title;
-  const _idString = (_id) => {
-    return String(_id).toLowerCase().split(" ").join("");
-  };
-  const rootId = _idString(_id);
+
+  const oldPrice = Number(product.oldPrice) || Number(product.price) * 1.2;
+  const slug = slugifyTitle(product.title);
+
   const handleDetails = () => {
-    navigate(`/product/${rootId}`, {
+    navigate(`/product/${slug}`, {
       state: {
         item: product,
       },
     });
   };
 
+  const handleAddToCart = () => {
+    dispatch(
+      addToCart({
+        _id: product._id,
+        title: product.title,
+        image: product.image,
+        price: product.price,
+        quantity: 1,
+        description: product.description,
+      })
+    );
+
+    toast.success(`${product.title} added to cart`);
+  };
+
   return (
-    <div className="group relative rounded-2xl overflow-hidden border-b">
-      <figure
+    <article className="group surface-card rounded-3xl overflow-hidden flex flex-col">
+      <button
+        type="button"
         onClick={handleDetails}
-        className="w-60 sm:w-72 lg:w-full h-96 hover:cursor-pointer overflow-hidden "
+        className="relative h-72 sm:h-80 overflow-hidden text-left"
+        aria-label={`View details for ${product.title}`}
       >
         <img
           src={product.image}
-          alt="productImg"
-          className="lg:w-full h-full object-cover group-hover:scale-110 duration-500"
+          alt={product.title}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-      </figure>
-      <div className=" border border-b-0 px-2 py-4 w-full flex flex-col gap-0.5 ">
-        <div className="flex justify-between">
-          <div>
-            <h2>{product.title.substring(0, 19)}</h2>
-          </div>
-          <div className="flex justify-center gap-2 text-sm relative overflow-hidden w-28 hover:cursor-pointer">
-            <div className="flex gap-2 relative justify-end transform group-hover:translate-x-24 duration-500">
-              <p className="line-through text-gray-500">${product.oldPrice}</p>
-              <p className="font-semibold">${product.price}</p>
-            </div>
-            <p
-              onClick={() =>
-                dispatch(
-                  addToCart({
-                    _id: product._id,
-                    title: product.title,
-                    image: product.image,
-                    price: product.price,
-                    quantity: 1,
-                    description: product.description,
-                  })
-                ) && toast.success(`${product.title} added to Cart`)
-              }
-              className="absolute z-20 w-[100px] top-0 transform -translate-x-32 group-hover:translate-x-0 duration-500 text-gray-500 flex items-center "
-            >
-              add to cart &nbsp;
-              <span>
-                <BsArrowBarRight />
-              </span>
-            </p>
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1a1598] via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <span className="absolute left-3 top-3 rounded-full bg-[#fff7ec] px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-[#3f3429]">
+          {product.category}
+        </span>
+      </button>
+
+      <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1">
         <div>
-          <p className="text-sm text-gray-700 capitalize">{product.category}</p>
+          <h3 className="display-font text-2xl leading-tight line-clamp-2">{product.title}</h3>
+          <p className="muted-text text-sm mt-1 line-clamp-2">{product.description}</p>
         </div>
-        <div className="absolute top-4 right-0">
-          {product.isNew && (
-            <p className="bg-slate-900 text-gray-100 text-sm text-center font-titleFont font-semibold rounded-l-lg  px-4 py-0.5 ">
-              Sale
-            </p>
-          )}
+
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-semibold text-[#1f1a15]">{formatCurrency(product.price)}</span>
+          <span className="line-through muted-text">{formatCurrency(oldPrice)}</span>
+        </div>
+
+        <div className="mt-auto grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={handleDetails}
+            className="btn-secondary !rounded-2xl inline-flex items-center justify-center gap-2 !py-2.5"
+          >
+            <Eye size={16} />
+            Details
+          </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="btn-primary !rounded-2xl inline-flex items-center justify-center gap-2 !py-2.5"
+          >
+            <ShoppingBag size={16} />
+            Add
+          </button>
         </div>
       </div>
-    </div>
+    </article>
   );
+};
+
+ProductCard.propTypes = {
+  product: PropTypes.shape({
+    _id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    title: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
+    price: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    oldPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    category: PropTypes.string,
+    description: PropTypes.string,
+  }).isRequired,
 };
 
 export default ProductCard;

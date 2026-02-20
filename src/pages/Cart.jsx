@@ -1,136 +1,154 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-
-import CartItem from "../components/CartItem";
-import { ToastContainer, toast } from "react-toastify";
-import StripeCheckout from "react-stripe-checkout";
+import { useMemo, useState } from "react";
 import axios from "axios";
-import { useOutletContext } from "react-router-dom";
-const Cart = () => {
-  const { dark } = useOutletContext(); // Get the dark mode state
-  const productData = useSelector((state) => state.bazar.productData);
-  const [totalAmt, setTotalAmt] = useState(null);
-  const [payNow, setPayNow] = useState(false);
-  const userInfo = useSelector((state) => state.bazar.userInfo);
+import { ArrowRight, LockKeyhole, ShoppingBag, UserRound } from "lucide-react";
+import StripeCheckout from "react-stripe-checkout";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import CartItem from "../components/CartItem";
+import { formatCurrency } from "../utils/product";
 
-  useEffect(() => {
-    let price = 0;
-    productData.map((product) => (price += product.price * product.quantity));
-    setTotalAmt(price.toFixed(2));
-  }, [productData]);
+const Cart = () => {
+  const productData = useSelector((state) => state.bazar.productData);
+  const userInfo = useSelector((state) => state.bazar.userInfo);
+  const [payNow, setPayNow] = useState(false);
+
+  const subtotal = useMemo(
+    () =>
+      productData.reduce(
+        (sum, product) => sum + Number(product.price) * Number(product.quantity),
+        0
+      ),
+    [productData]
+  );
+
+  const shipping = subtotal > 120 ? 0 : productData.length ? 12 : 0;
+  const tax = subtotal * 0.05;
+  const total = subtotal + shipping + tax;
+
+  const paymentApiUrl =
+    import.meta.env.VITE_PAYMENT_API_URL || "https://eBazaar-api-backend/pay";
+  const stripeKey =
+    import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+    "pk_test_51NPN6ZSAdCrwmZUXYsOcpBg6s7nFA90QIR1frvzXZKrHQo5wL5spmSyC6zVbqOWQEfAaPgeSLoviCfSmaCwUZvJT00Ufprot9c";
 
   const payment = async (token) => {
-    await axios.post("https://eBazaar-api-backend/pay", {
-      amount: totalAmt * 100,
-      token: token,
-    });
+    try {
+      await axios.post(paymentApiUrl, {
+        amount: Math.round(total * 100),
+        token,
+      });
+      toast.success("Payment request submitted successfully");
+      setPayNow(false);
+    } catch {
+      toast.error("Payment failed. Please try again.");
+    }
   };
 
   const handleCheckout = () => {
-    if (userInfo) {
-      setPayNow(true);
-    } else {
-      toast.error("Please sign in to Checkout");
+    if (!productData.length) {
+      toast.error("Your cart is empty");
+      return;
     }
+
+    if (!userInfo) {
+      toast.error("Please sign in before checkout");
+      return;
+    }
+
+    setPayNow(true);
   };
+
   return (
-    <div
-      className={`flex flex-col items-center min-h-screen px-1 ${
-        !dark ? "bg-gray-300" : "bg-gray-700"
-      }`}
-    >
-      <div className=" mt-30 flex gap-10 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
-        <div className="w-5/6 sm:w-1/2  md:w-2/3">
+    <section className="section-shell py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr,0.9fr] gap-6 items-start">
+        <div>
+          <div className="mb-4">
+            <p className="uppercase tracking-[0.18em] text-xs muted-text mb-2">Shopping Bag</p>
+            <h1 className="section-title">Review your selected pieces</h1>
+          </div>
           <CartItem />
         </div>
-        <div className="w-5/6 sm:w-1/2 pl-5 md:pl-0 md:w-1/3 text-sm lg:text-base flex flex-col gap-3 items-center text-gray-800  pt-3">
-          <h2
-            className={`w-full text-left pl-2.5 font-titleFont font-semibold text-2xl mb-3 ${
-              dark ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Cart Total
-          </h2>
-          <div className="w-full flex items-center mb-1">
-            <span className={`${dark ? "text-white" : "text-black"}`}>
-              Subtotal
-            </span>
-            <p
-              className={`text-lg ml-auto ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
-              ${totalAmt}
-            </p>
+
+        <aside className="surface-card rounded-[2rem] p-5 sm:p-6 lg:sticky lg:top-24">
+          <p className="uppercase tracking-[0.18em] text-xs muted-text mb-3">Order Summary</p>
+
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="muted-text">Subtotal</span>
+              <span className="font-semibold">{formatCurrency(subtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="muted-text">Shipping</span>
+              <span className="font-semibold">{shipping ? formatCurrency(shipping) : "Free"}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="muted-text">Estimated tax</span>
+              <span className="font-semibold">{formatCurrency(tax)}</span>
+            </div>
           </div>
 
-          <div className=" gap-3 w-full mb-4">
-            <span className={` ${dark ? "text-white" : "text-black"} w-1/5`}>
-              Shipping Add
-            </span>
-            <input
-              type="text"
-              placeholder="write address here"
-              className="border-1 rounded-md p-1 mt-1 text-center"
-            />
+          <div className="border-t border-[#1f1a151f] my-5" />
+
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-base font-semibold">Total</span>
+            <span className="display-font text-3xl leading-none">{formatCurrency(total)}</span>
           </div>
-          <div
-            className={`border w-full px-2 mb-4 ${
-              dark ? "border-gray-300" : "border-gray-600"
-            }`}
-          ></div>
-          <div className="flex  justify-between w-full items-center">
-            <span
-              className={`text-lg font-semibold ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
-              Total
-            </span>
-            <p
-              className={`text-lg font-semibold ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
-              ${totalAmt}
-            </p>
+
+          <div className="rounded-2xl border border-[#1f1a1525] bg-[#f9f1e4] p-3 mb-4 text-sm">
+            {userInfo ? (
+              <p className="flex items-center gap-2 text-[#2f3f36]">
+                <UserRound size={16} />
+                Signed in as {userInfo.email}
+              </p>
+            ) : (
+              <p className="flex items-center gap-2 text-[#5c4f42]">
+                <UserRound size={16} />
+                Guest mode. <Link to="/login" className="underline">Sign in</Link> for checkout.
+              </p>
+            )}
           </div>
 
           <button
-            className="bg-gray-900 text-white w-full py-2 rounded"
+            type="button"
+            className="btn-primary !w-full inline-flex items-center justify-center gap-2"
             onClick={handleCheckout}
           >
-            Proceed to Checkout
+            <LockKeyhole size={16} />
+            Proceed to secure checkout
           </button>
+
           {payNow && (
-            <div className="w-full mt-2 flex items-center justify-center">
+            <div className="mt-3 rounded-2xl border border-[#1f1a1522] bg-[#fff9f0] p-3">
               <StripeCheckout
-                stripeKey="pk_test_51NPN6ZSAdCrwmZUXYsOcpBg6s7nFA90QIR1frvzXZKrHQo5wL5spmSyC6zVbqOWQEfAaPgeSLoviCfSmaCwUZvJT00Ufprot9c"
-                name="Bazar Online Shopping"
-                amount={totalAmt * 100}
-                label="Pay to bazar"
-                description={`Your Payment amount is $${totalAmt}`}
+                stripeKey={stripeKey}
+                name="eBazaar"
+                amount={Math.round(total * 100)}
+                label="Pay with Stripe"
+                description={`Order total: ${formatCurrency(total)}`}
                 token={payment}
-                email={userInfo.email}
-                className="w-full"
+                email={userInfo?.email}
               />
             </div>
           )}
-        </div>
+
+          <div className="mt-4 rounded-2xl border border-[#486b5b38] bg-[#e8f0ec] p-3 text-sm text-[#3f5b4f]">
+            <p className="font-semibold flex items-center gap-2 mb-1">
+              <ShoppingBag size={15} />
+              Free shipping unlock
+            </p>
+            <p>
+              Add {formatCurrency(Math.max(0, 120 - subtotal))} more to qualify for free shipping.
+            </p>
+          </div>
+
+          <Link to="/shop" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#1f1a15] hover:underline">
+            Continue shopping
+            <ArrowRight size={14} />
+          </Link>
+        </aside>
       </div>
-      <ToastContainer
-        position="top-left"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-    </div>
+    </section>
   );
 };
 
