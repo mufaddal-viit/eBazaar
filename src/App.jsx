@@ -1,17 +1,34 @@
-import Home from "./pages/Home";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 import {
   createBrowserRouter,
   Outlet,
   RouterProvider,
   ScrollRestoration,
 } from "react-router-dom";
-import Cart from "./pages/Cart";
 import productsData from "./api/Api";
-import Product from "./components/Product";
-import Login from "./pages/Login";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+import { CookieConsentProvider } from "./context/CookieConsentContext";
+
+const Home = lazy(() => import("./pages/Home"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Product = lazy(() => import("./components/Product"));
+const Login = lazy(() => import("./pages/Login"));
+
+const withRouteSuspense = (element) => (
+  <Suspense
+    fallback={
+      <div className="flex min-h-[70vh] items-center justify-center px-4 pt-28">
+        <p className="border border-[#f4f0e8]/20 px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8]/65">
+          Loading...
+        </p>
+      </div>
+    }
+  >
+    {element}
+  </Suspense>
+);
 
 const Layout = () => {
   const [dark, setdark] = useState(true);
@@ -29,6 +46,7 @@ const Layout = () => {
       <ScrollRestoration />
       <Outlet context={{ dark }} />
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 };
@@ -40,26 +58,26 @@ const router = createBrowserRouter(
       children: [
         {
           path: "/",
-          element: <Home />,
+          element: withRouteSuspense(<Home />),
           loader: productsData,
         },
         {
           path: "/shop",
-          element: <Home />,
+          element: withRouteSuspense(<Home />),
           loader: productsData,
         },
         {
           path: "/product/:id",
-          element: <Product />,
+          element: withRouteSuspense(<Product />),
           loader: productsData,
         },
         {
           path: "/cart",
-          element: <Cart />,
+          element: withRouteSuspense(<Cart />),
         },
         {
           path: "login",
-          element: <Login />,
+          element: withRouteSuspense(<Login />),
         },
         {
           path: "not-available",
@@ -80,10 +98,9 @@ const router = createBrowserRouter(
 );
 function App() {
   return (
-    <>
-      {/* <h1>Hello</h1> */}
+    <CookieConsentProvider>
       <RouterProvider router={router} />
-    </>
+    </CookieConsentProvider>
   );
 }
 

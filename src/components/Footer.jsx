@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { FaInstagram, FaPinterestP } from "react-icons/fa";
 import { FiFacebook, FiTwitter } from "react-icons/fi";
+import { useCookieConsent } from "../context/CookieConsentContext";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { openPreferences } = useCookieConsent();
   const linkClass =
     "text-xs uppercase tracking-[0.24em] text-[#f4f0e8]/62 transition-colors hover:text-[#c9a96e]";
 
@@ -47,6 +49,9 @@ const Footer = () => {
           <Link className={linkClass} to="/not-available">
             Contact
           </Link>
+          <button onClick={openPreferences} className={`${linkClass} text-left`}>
+            Cookie Preferences
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -94,7 +99,7 @@ const Footer = () => {
       </div>
 
       <div className="mx-auto mt-10 max-w-[1320px] border-t border-[#f4f0e8]/12 pt-5 text-[11px] uppercase tracking-[0.22em] text-[#f4f0e8]/45">
-        © {currentYear} eBazaar. All rights reserved.
+        (c) {currentYear} eBazaar. All rights reserved.
       </div>
     </footer>
   );
