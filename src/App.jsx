@@ -76,7 +76,7 @@ const router = createBrowserRouter(
   ],
   {
     basename: "/eBazaar",
-  }
+  },
 );
 function App() {
   return (

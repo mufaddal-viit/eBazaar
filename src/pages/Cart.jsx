@@ -6,15 +6,30 @@ import { useOutletContext } from "react-router-dom";
 import CartItem from "../components/CartItem";
 import useAppToast from "../hooks/useAppToast";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!API_BASE_URL) {
+  throw new Error("Missing required environment variable: VITE_API_BASE_URL");
+}
+
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error(
+    "Missing required environment variable: VITE_STRIPE_PUBLISHABLE_KEY"
+  );
+}
+
 const Cart = () => {
   const { dark } = useOutletContext();
   const productData = useSelector((state) => state.bazar.productData);
   const userInfo = useSelector((state) => state.bazar.userInfo);
-  const { error } = useAppToast();
+  const { error, success } = useAppToast();
 
   const [totalAmt, setTotalAmt] = useState(null);
   const [payNow, setPayNow] = useState(false);
   const [drawerReady, setDrawerReady] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
 
   useEffect(() => {
     const timeout = setTimeout(() => setDrawerReady(true), 120);
@@ -30,14 +45,48 @@ const Cart = () => {
   }, [productData]);
 
   const payment = async (token) => {
-    await axios.post("https://eBazaar-api-backend/pay", {
-      amount: totalAmt * 100,
-      token: token,
-    });
+    const lineItems = productData.map((product) => ({
+      productId: product._id,
+      quantity: product.quantity,
+    }));
+
+    if (lineItems.length === 0) {
+      error("Your cart is empty.");
+      return;
+    }
+
+    setPaymentError("");
+    setIsProcessingPayment(true);
+    try {
+      await axios.post(`${API_BASE_URL.replace(/\/$/, "")}/pay`, {
+        token,
+        items: lineItems,
+      });
+      success("Payment request submitted.");
+      setPayNow(false);
+    } catch (requestError) {
+      const fallbackMessage = "Payment failed. Please try again.";
+      const message = axios.isAxiosError(requestError)
+        ? requestError.response?.data?.message ||
+          requestError.message ||
+          fallbackMessage
+        : fallbackMessage;
+
+      setPaymentError(message);
+      error(message);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleCheckout = () => {
+    if (productData.length === 0) {
+      error("Your cart is empty.");
+      return;
+    }
+
     if (userInfo) {
+      setPaymentError("");
       setPayNow(true);
     } else {
       error("Please sign in to checkout");
@@ -90,27 +139,40 @@ const Cart = () => {
           </div>
 
           <button
-            className="group relative mt-6 w-full overflow-hidden border border-[#c9a96e] py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8]"
+            className={`group relative mt-6 w-full overflow-hidden border border-[#c9a96e] py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8] ${
+              isProcessingPayment ? "cursor-not-allowed opacity-60" : ""
+            }`}
             onClick={handleCheckout}
+            disabled={isProcessingPayment || Number(totalAmt) <= 0}
           >
             <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
             <span className="relative z-10 transition-colors duration-500 group-hover:text-[#0a0a0a]">
-              Proceed to Checkout
+              {isProcessingPayment ? "Processing..." : "Proceed to Checkout"}
             </span>
           </button>
 
           {payNow && (
-            <div className="mt-4 w-full overflow-hidden border border-[#f4f0e8]/20 bg-[#0a0a0a] p-3">
+            <div
+              className={`mt-4 w-full overflow-hidden border border-[#f4f0e8]/20 bg-[#0a0a0a] p-3 ${
+                isProcessingPayment ? "pointer-events-none opacity-60" : ""
+              }`}
+            >
               <StripeCheckout
-                stripeKey="pk_test_51NPN6ZSAdCrwmZUXYsOcpBg6s7nFA90QIR1frvzXZKrHQo5wL5spmSyC6zVbqOWQEfAaPgeSLoviCfSmaCwUZvJT00Ufprot9c"
+                stripeKey={STRIPE_PUBLISHABLE_KEY}
                 name="Bazar Online Shopping"
                 amount={totalAmt * 100}
                 label="Pay to bazar"
                 description={`Your Payment amount is $${totalAmt}`}
                 token={payment}
-                email={userInfo.email}
+                email={userInfo?.email}
+                disabled={isProcessingPayment}
                 className="w-full"
               />
+              {paymentError && (
+                <p className="mt-3 text-xs tracking-[0.04em] text-[#c86060]">
+                  {paymentError}
+                </p>
+              )}
             </div>
           )}
         </aside>

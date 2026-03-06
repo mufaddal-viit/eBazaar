@@ -1,38 +1,140 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { MdOutlineStar } from "react-icons/md";
-import { useLoaderData, useLocation, useParams } from "react-router-dom";
+import { Link, useLoaderData, useLocation, useParams } from "react-router-dom";
 import { addToCart } from "../redux/bazarSlice";
 import useAppToast from "../hooks/useAppToast";
 
+const isValidProduct = (item) => {
+  if (!item) return false;
+  const parsedPrice = Number(item.price);
+  return Boolean(
+    item._id &&
+      item.title &&
+      item.image &&
+      Number.isFinite(parsedPrice) &&
+      parsedPrice > 0
+  );
+};
+
 const Product = () => {
   const dispatch = useDispatch();
-  const { success } = useAppToast();
+  const { success, error } = useAppToast();
   const [details, setDetails] = useState({});
+  const [status, setStatus] = useState("loading");
+  const [loadError, setLoadError] = useState("");
   const [baseQty, setBaseQty] = useState(1);
   const location = useLocation();
   const uniqueId = useParams();
   const response = useLoaderData();
 
+  const canAddToCart = useMemo(() => isValidProduct(details), [details]);
+  const isNotFound = status === "not-found" || (status === "ready" && !canAddToCart);
+
   useEffect(() => {
     if (location?.state?.item) {
       setDetails(location.state.item);
+      setStatus("ready");
+      return;
+    }
+
+    if (response?.error) {
+      setLoadError(response.error);
+      setStatus("error");
       return;
     }
 
     if (!response?.data) {
+      setStatus("loading");
       return;
     }
 
     const matchedItem = response.data.find((item) => {
-      const normalizedTitle = String(item.title).toLowerCase().replace(/\s+/g, "").trim();
+      const normalizedTitle = String(item.title)
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .trim();
       return normalizedTitle === uniqueId.id;
     });
 
     if (matchedItem) {
       setDetails(matchedItem);
+      setStatus("ready");
+    } else {
+      setStatus("not-found");
     }
   }, [location, response, uniqueId.id]);
+
+  const handleAddToCart = () => {
+    if (!canAddToCart) {
+      error("Product details are unavailable. Please refresh and try again.");
+      return;
+    }
+
+    dispatch(
+      addToCart({
+        _id: details._id,
+        title: details.title,
+        image: details.image,
+        price: Number(details.price),
+        quantity: baseQty,
+        description: details.description || "",
+      })
+    );
+    success(`${details.title} is added`);
+  };
+
+  if (status === "loading") {
+    return (
+      <section className="relative min-h-screen px-4 pb-20 pt-28 sm:px-6">
+        <div className="mx-auto max-w-[1280px] border border-[#f4f0e8]/15 bg-[#101010]/70 p-10 text-center">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-[#f4f0e8]/55">
+            Loading Product
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <section className="relative min-h-screen px-4 pb-20 pt-28 sm:px-6">
+        <div className="mx-auto max-w-[1280px] border border-[#c86060]/45 bg-[#240f0f]/60 p-10 text-center">
+          <h1 className="font-display text-4xl text-[#f4f0e8]">
+            Failed To Load Product
+          </h1>
+          <p className="mt-3 text-sm tracking-[0.04em] text-[#f4f0e8]/75">
+            {loadError || "Please refresh and try again."}
+          </p>
+          <Link
+            to="/shop"
+            className="mt-8 inline-flex border border-[#c9a96e] px-5 py-3 text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8] transition hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+          >
+            Back To Shop
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (isNotFound) {
+    return (
+      <section className="relative min-h-screen px-4 pb-20 pt-28 sm:px-6">
+        <div className="mx-auto max-w-[1280px] border border-[#f4f0e8]/15 bg-[#101010]/70 p-10 text-center">
+          <h1 className="font-display text-4xl text-[#f4f0e8]">Product Not Found</h1>
+          <p className="mt-3 text-sm tracking-[0.04em] text-[#f4f0e8]/65">
+            This product is unavailable or the link is invalid.
+          </p>
+          <Link
+            to="/shop"
+            className="mt-8 inline-flex border border-[#c9a96e] px-5 py-3 text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8] transition hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+          >
+            Back To Shop
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative min-h-screen px-4 pb-20 pt-28 sm:px-6">
@@ -112,20 +214,11 @@ const Product = () => {
             </div>
 
             <button
-              onClick={() => {
-                dispatch(
-                  addToCart({
-                    _id: details._id,
-                    title: details.title,
-                    image: details.image,
-                    price: details.price,
-                    quantity: baseQty,
-                    description: details.description,
-                  })
-                );
-                success(`${details.title} is added`);
-              }}
-              className="group relative overflow-hidden border border-[#c9a96e] px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8]"
+              onClick={handleAddToCart}
+              disabled={!canAddToCart}
+              className={`group relative overflow-hidden border border-[#c9a96e] px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8] ${
+                !canAddToCart ? "cursor-not-allowed opacity-60" : ""
+              }`}
             >
               <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
               <span className="relative z-10 transition-colors duration-500 group-hover:text-[#0a0a0a]">

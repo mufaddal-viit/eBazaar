@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   GoogleAuthProvider,
   getAuth,
@@ -17,10 +18,12 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userInfo = useSelector((state) => state.bazar.userInfo);
-  const { success } = useAppToast();
+  const { success, error } = useAppToast();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const handleGoogleLogin = (event) => {
     event.preventDefault();
+    setIsSigningIn(true);
     signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
@@ -36,8 +39,13 @@ const Login = () => {
           navigate("/");
         }, 1500);
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((authError) => {
+        const fallbackMessage = "Google sign-in failed. Please try again.";
+        const message = authError?.message || fallbackMessage;
+        error(message);
+      })
+      .finally(() => {
+        setIsSigningIn(false);
       });
   };
 
@@ -68,6 +76,7 @@ const Login = () => {
           <div className="mt-10">
             <button
               onClick={handleGoogleLogin}
+              disabled={isSigningIn}
               className="group relative w-full overflow-hidden border border-[#c9a96e] px-4 py-3 text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8]"
             >
               <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
@@ -75,7 +84,7 @@ const Login = () => {
                 <svg viewBox="0 0 48 48" className="h-4 w-4 fill-current">
                   <path d="M44.5 20H24v8.5h11.8C34.7 33.9 30 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 3l6.1-6.1C34.4 4.5 29.5 2.5 24 2.5 12.4 2.5 3 11.9 3 23.5S12.4 44.5 24 44.5 45 35.6 45 24c0-1.3-.2-2.7-.5-4z" />
                 </svg>
-                Sign In With Google
+                {isSigningIn ? "Signing In..." : "Sign In With Google"}
               </span>
             </button>
           </div>
