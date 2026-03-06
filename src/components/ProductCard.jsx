@@ -1,83 +1,98 @@
-import React from "react";
 import { BsArrowBarRight } from "react-icons/bs";
 import { useDispatch } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/bazarSlice";
-import { toast } from "react-toastify";
+import useAppToast from "../hooks/useAppToast";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const _id = product.title;
-  const _idString = (_id) => {
-    return String(_id).toLowerCase().split(" ").join("");
-  };
-  const rootId = _idString(_id);
+  const { success } = useAppToast();
+
+  const rootId = String(product.title).toLowerCase().split(" ").join("");
+  const hasDiscount = Number(product.oldPrice) > Number(product.price);
+  const tag = product.isNew ? "NEW" : hasDiscount ? "SALE" : null;
+
   const handleDetails = () => {
     navigate(`/product/${rootId}`, {
-      state: {
-        item: product,
-      },
+      state: { item: product },
+    });
+  };
+
+  const handleAddToCart = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dispatch(
+      addToCart({
+        _id: product._id,
+        title: product.title,
+        image: product.image,
+        price: product.price,
+        quantity: 1,
+        description: product.description,
+      })
+    );
+    success(`${product.title} added to cart`, {
+      autoClose: 1800,
     });
   };
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden border-b">
+    <article className="group relative h-full min-h-[260px] overflow-hidden border border-[#f4f0e8]/15 bg-[#101010]">
       <figure
         onClick={handleDetails}
-        className="w-60 sm:w-72 lg:w-full h-96 hover:cursor-pointer overflow-hidden "
+        className="h-full cursor-pointer overflow-hidden"
       >
         <img
           src={product.image}
-          alt="productImg"
-          className="lg:w-full h-full object-cover group-hover:scale-110 duration-500"
+          alt={product.title}
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
       </figure>
-      <div className=" border border-b-0 px-2 py-4 w-full flex flex-col gap-0.5 ">
-        <div className="flex justify-between">
-          <div>
-            <h2>{product.title.substring(0, 19)}</h2>
-          </div>
-          <div className="flex justify-center gap-2 text-sm relative overflow-hidden w-28 hover:cursor-pointer">
-            <div className="flex gap-2 relative justify-end transform group-hover:translate-x-24 duration-500">
-              <p className="line-through text-gray-500">${product.oldPrice}</p>
-              <p className="font-semibold">${product.price}</p>
+
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-[#050505]/35 to-transparent" />
+
+      {tag && (
+        <span className="absolute left-3 top-3 border border-[#c9a96e]/70 bg-[#090909]/80 px-2 py-1 text-[10px] uppercase tracking-[0.3em] text-[#c9a96e]">
+          {tag}
+        </span>
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 z-10 p-4">
+        <p className="text-[10px] uppercase tracking-[0.26em] text-[#f4f0e8]/65">
+          {product.category}
+        </p>
+        <h3
+          onClick={handleDetails}
+          className="mt-2 cursor-pointer font-display text-lg leading-tight text-[#f4f0e8]"
+        >
+          {product.title}
+        </h3>
+
+        <div className="mt-2 flex justify-end text-sm font-medium tabular-nums cursor-pointer ">
+          <div className="relative w-[124px] cursor-pointer overflow-hidden">
+            <div className="flex justify-end gap-2 transform transition-transform duration-500 group-hover:translate-x-24">
+              {hasDiscount && (
+                <p className="font-mono text-[#f4f0e8]/45 line-through">
+                  ${product.oldPrice}
+                </p>
+              )}
+              <p className="font-mono text-[#c9a96e]">${product.price}</p>
             </div>
-            <p
-              onClick={() =>
-                dispatch(
-                  addToCart({
-                    _id: product._id,
-                    title: product.title,
-                    image: product.image,
-                    price: product.price,
-                    quantity: 1,
-                    description: product.description,
-                  })
-                ) && toast.success(`${product.title} added to Cart`)
-              }
-              className="absolute z-20 w-[100px] top-0 transform -translate-x-32 group-hover:translate-x-0 duration-500 text-gray-500 flex items-center "
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className="cursor-pointer absolute z-20 top-0 flex w-[120px] -translate-x-32 transform items-center text-[11px] uppercase tracking-[0.18em] text-[#f4f0e8]/85 transition-transform duration-500 group-hover:translate-x-0 hover:text-[#c9a96e]"
             >
-              add to cart &nbsp;
-              <span>
-                <BsArrowBarRight />
+              Add to cart
+              <span className="ml-1">
+                <BsArrowBarRight className="h-3.5 w-3.5" />
               </span>
-            </p>
+            </button>
           </div>
-        </div>
-        <div>
-          <p className="text-sm text-gray-700 capitalize">{product.category}</p>
-        </div>
-        <div className="absolute top-4 right-0">
-          {product.isNew && (
-            <p className="bg-slate-900 text-gray-100 text-sm text-center font-titleFont font-semibold rounded-l-lg  px-4 py-0.5 ">
-              Sale
-            </p>
-          )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

@@ -1,21 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-
-import CartItem from "../components/CartItem";
-import { ToastContainer, toast } from "react-toastify";
-import StripeCheckout from "react-stripe-checkout";
 import axios from "axios";
+import StripeCheckout from "react-stripe-checkout";
 import { useOutletContext } from "react-router-dom";
+import CartItem from "../components/CartItem";
+import useAppToast from "../hooks/useAppToast";
+
 const Cart = () => {
-  const { dark } = useOutletContext(); // Get the dark mode state
+  const { dark } = useOutletContext();
   const productData = useSelector((state) => state.bazar.productData);
+  const userInfo = useSelector((state) => state.bazar.userInfo);
+  const { error } = useAppToast();
+
   const [totalAmt, setTotalAmt] = useState(null);
   const [payNow, setPayNow] = useState(false);
-  const userInfo = useSelector((state) => state.bazar.userInfo);
+  const [drawerReady, setDrawerReady] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDrawerReady(true), 120);
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     let price = 0;
-    productData.map((product) => (price += product.price * product.quantity));
+    productData.forEach((product) => {
+      price += product.price * product.quantity;
+    });
     setTotalAmt(price.toFixed(2));
   }, [productData]);
 
@@ -30,80 +40,67 @@ const Cart = () => {
     if (userInfo) {
       setPayNow(true);
     } else {
-      toast.error("Please sign in to Checkout");
+      error("Please sign in to checkout");
     }
   };
+
   return (
-    <div
-      className={`flex flex-col items-center min-h-screen px-1 ${
-        !dark ? "bg-gray-300" : "bg-gray-700"
+    <section
+      className={`min-h-screen px-4 pb-20 pt-28 sm:px-6 ${
+        dark ? "bg-[#0a0a0a]" : "bg-[#151515]"
       }`}
     >
-      <div className=" mt-30 flex gap-10 flex-wrap sm:flex-nowrap justify-center sm:justify-start max-w-screen-xl p-4 my-1">
-        <div className="w-5/6 sm:w-1/2  md:w-2/3">
+      <div className="mx-auto grid max-w-[1280px] gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="border border-[#f4f0e8]/15 bg-[#101010]/70 p-4 sm:p-6">
           <CartItem />
         </div>
-        <div className="w-5/6 sm:w-1/2 pl-5 md:pl-0 md:w-1/3 text-sm lg:text-base flex flex-col gap-3 items-center text-gray-800  pt-3">
-          <h2
-            className={`w-full text-left pl-2.5 font-titleFont font-semibold text-2xl mb-3 ${
-              dark ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Cart Total
-          </h2>
-          <div className="w-full flex items-center mb-1">
-            <span className={`${dark ? "text-white" : "text-black"}`}>
-              Subtotal
-            </span>
-            <p
-              className={`text-lg ml-auto ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
-              ${totalAmt}
-            </p>
+
+        <aside
+          className={`h-fit border border-[#f4f0e8]/20 bg-[#0d0d0d] p-6 transition-all duration-600 xl:sticky xl:top-28 ${
+            drawerReady
+              ? "translate-x-0 opacity-100"
+              : "translate-x-8 opacity-0 xl:translate-x-16"
+          }`}
+        >
+          <h2 className="font-display text-3xl text-[#f4f0e8]">Cart Total</h2>
+
+          <div className="mt-8 space-y-4 text-sm uppercase tracking-[0.16em]">
+            <div className="flex items-center justify-between border-b border-[#f4f0e8]/12 pb-3 text-[#f4f0e8]/78">
+              <span>Subtotal</span>
+              <p className="font-mono text-lg text-[#c9a96e]">${totalAmt}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[#f4f0e8]/62">Shipping Address</label>
+              <input
+                type="text"
+                placeholder="Write address here"
+                className="w-full border border-[#f4f0e8]/20 bg-transparent px-3 py-2 text-sm normal-case tracking-normal text-[#f4f0e8] placeholder:text-[#f4f0e8]/35 outline-none transition focus:border-[#c9a96e]"
+              />
+            </div>
           </div>
 
-          <div className=" gap-3 w-full mb-4">
-            <span className={` ${dark ? "text-white" : "text-black"} w-1/5`}>
-              Shipping Add
-            </span>
-            <input
-              type="text"
-              placeholder="write address here"
-              className="border-1 rounded-md p-1 mt-1 text-center"
-            />
-          </div>
-          <div
-            className={`border w-full px-2 mb-4 ${
-              dark ? "border-gray-300" : "border-gray-600"
-            }`}
-          ></div>
-          <div className="flex  justify-between w-full items-center">
-            <span
-              className={`text-lg font-semibold ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
+          <div className="my-5 border-t border-[#f4f0e8]/12" />
+
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] uppercase tracking-[0.3em] text-[#f4f0e8]/70">
               Total
             </span>
-            <p
-              className={`text-lg font-semibold ${
-                dark ? "text-white" : "text-black"
-              }`}
-            >
-              ${totalAmt}
-            </p>
+            <p className="font-mono text-3xl text-[#f4f0e8]">${totalAmt}</p>
           </div>
 
           <button
-            className="bg-gray-900 text-white w-full py-2 rounded"
+            className="group relative mt-6 w-full overflow-hidden border border-[#c9a96e] py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8]"
             onClick={handleCheckout}
           >
-            Proceed to Checkout
+            <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
+            <span className="relative z-10 transition-colors duration-500 group-hover:text-[#0a0a0a]">
+              Proceed to Checkout
+            </span>
           </button>
+
           {payNow && (
-            <div className="w-full mt-2 flex items-center justify-center">
+            <div className="mt-4 w-full overflow-hidden border border-[#f4f0e8]/20 bg-[#0a0a0a] p-3">
               <StripeCheckout
                 stripeKey="pk_test_51NPN6ZSAdCrwmZUXYsOcpBg6s7nFA90QIR1frvzXZKrHQo5wL5spmSyC6zVbqOWQEfAaPgeSLoviCfSmaCwUZvJT00Ufprot9c"
                 name="Bazar Online Shopping"
@@ -116,21 +113,10 @@ const Cart = () => {
               />
             </div>
           )}
-        </div>
+        </aside>
       </div>
-      <ToastContainer
-        position="top-left"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-    </div>
+
+    </section>
   );
 };
 

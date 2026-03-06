@@ -1,101 +1,116 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import { MdOutlineStar } from "react-icons/md";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { MdOutlineStar } from "react-icons/md";
+import { useLoaderData, useLocation, useParams } from "react-router-dom";
 import { addToCart } from "../redux/bazarSlice";
-import { ToastContainer, toast } from "react-toastify";
-import { useLoaderData } from "react-router-dom";
+import useAppToast from "../hooks/useAppToast";
 
 const Product = () => {
   const dispatch = useDispatch();
+  const { success } = useAppToast();
   const [details, setDetails] = useState({});
-  let [baseQty, setBaseQty] = useState(1);
+  const [baseQty, setBaseQty] = useState(1);
   const location = useLocation();
-  const unique_id = useParams();
+  const uniqueId = useParams();
   const response = useLoaderData();
 
   useEffect(() => {
     if (location?.state?.item) {
-      console.log("Got item from location.state");
       setDetails(location.state.item);
-    } else {
-      if (response?.data) {
-        const matchedItems = response.data.filter((item) => {
-          const normalizedTitle = String(item.title)
-            .toLowerCase()
-            .replace(/\s+/g, "") // better than split/join
-            .trim();
-
-          return normalizedTitle === unique_id.id;
-        });
-
-        if (matchedItems.length > 0) {
-          setDetails(matchedItems[0]); // Only set the first matched item
-          console.log("Matched Items: ", matchedItems);
-        }
-      }
+      return;
     }
-  }, [location, response, unique_id.id]);
+
+    if (!response?.data) {
+      return;
+    }
+
+    const matchedItem = response.data.find((item) => {
+      const normalizedTitle = String(item.title).toLowerCase().replace(/\s+/g, "").trim();
+      return normalizedTitle === uniqueId.id;
+    });
+
+    if (matchedItem) {
+      setDetails(matchedItem);
+    }
+  }, [location, response, uniqueId.id]);
 
   return (
-    <div className="min-h-[70vh]">
-      <div className="max-w-screen-xl mx-auto my-10 flex flex-col items-center sm:flex-row gap-10 px-4">
-        <div className="mt-10 w-full sm:w-2/5 relative">
+    <section className="relative min-h-screen px-4 pb-20 pt-28 sm:px-6">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,_rgba(201,169,110,0.16),_transparent_75%)]" />
+
+      <div className="mx-auto grid max-w-[1280px] gap-10 border border-[#f4f0e8]/15 bg-[#101010]/70 p-5 md:grid-cols-[1.02fr_1fr] md:p-8">
+        <div className="relative overflow-hidden border border-[#f4f0e8]/20">
           <img
-            className="w-full h-[350px] lg:h-[550px] object-cover rounded-lg shadow-md"
+            className="h-[420px] w-full object-cover md:h-[620px]"
             src={details.image}
             alt={details.title}
           />
-          <div className="absolute top-4 right-0">
-            {details.isNew && (
-              <p className="bg-black text-white font-semibold font-titleFont px-6 py-1 rounded-l-lg">
-                Sale
-              </p>
-            )}
-          </div>
+          {(details.isNew ||
+            Number(details.oldPrice) > Number(details.price)) && (
+            <span className="absolute right-0 top-5 border border-[#c9a96e]/70 bg-[#090909]/88 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">
+              {details.isNew ? "NEW" : "SALE"}
+            </span>
+          )}
         </div>
-        <div className="w-full sm:w-3/5 flex flex-col justify-center gap-8">
+
+        <div className="flex flex-col justify-center gap-7">
           <div>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-2">
+            <p className="text-[11px] uppercase tracking-[0.34em] text-[#c9a96e]">
+              Product Detail
+            </p>
+            <h1 className="mt-4 font-display text-4xl leading-tight text-[#f4f0e8] md:text-5xl">
               {details.title}
-            </h2>
-            <div className="flex items-center gap-4">
-              <p className="line-through text-base text-gray-500">
+            </h1>
+
+            <div className="mt-4 flex items-center gap-3 tabular-nums">
+              <p className="font-mono text-[#f4f0e8]/45 line-through">
                 ${details.oldPrice}
               </p>
-              <p className="text-2xl font-medium text-gray-900">
+              <p className="font-mono text-2xl text-[#c9a96e]">
                 ${details.price}
               </p>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            <div className="flex text-yellow-400">
+            <div className="flex text-[#c9a96e]">
               {[...Array(5)].map((_, index) => (
                 <MdOutlineStar key={index} />
               ))}
             </div>
-            <p className="text-sm text-gray-500">(1 Customer review)</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#f4f0e8]/55">
+              1 Customer Review
+            </p>
           </div>
-          <p className="text-base text-gray-600">{details.description}</p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex gap-3 items-center justify-between text-gray-500 border border-gray-300 rounded p-3">
-              <p className="text-sm ">Quantity</p>
-              <div className="flex items-center gap-2 text-sm font-semibold">
+
+          <p className="max-w-xl text-sm leading-relaxed tracking-[0.03em] text-[#f4f0e8]/75">
+            {details.description}
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-4 border border-[#f4f0e8]/25 px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8]/60">
+                Quantity
+              </p>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setBaseQty(Math.max(1, baseQty - 1))}
-                  className="border h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors duration-300"
+                  className="h-8 w-8 border border-[#f4f0e8]/35 text-sm transition hover:border-[#c9a96e] hover:text-[#c9a96e]"
                 >
                   -
                 </button>
-                <span>{baseQty}</span>
+                <span className="w-6 text-center font-mono text-base text-[#f4f0e8]">
+                  {baseQty}
+                </span>
                 <button
                   onClick={() => setBaseQty(baseQty + 1)}
-                  className="border h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors duration-300"
+                  className="h-8 w-8 border border-[#f4f0e8]/35 text-sm transition hover:border-[#c9a96e] hover:text-[#c9a96e]"
                 >
                   +
                 </button>
               </div>
             </div>
+
             <button
               onClick={() => {
                 dispatch(
@@ -108,32 +123,25 @@ const Product = () => {
                     description: details.description,
                   })
                 );
-                toast.success(`${details.title} is added`);
+                success(`${details.title} is added`);
               }}
-              className="bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors duration-300"
+              className="group relative overflow-hidden border border-[#c9a96e] px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-[#f4f0e8]"
             >
-              Add to Cart
+              <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
+              <span className="relative z-10 transition-colors duration-500 group-hover:text-[#0a0a0a]">
+                Add To Cart
+              </span>
             </button>
           </div>
-          <p className="text-sm text-gray-500">
+
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8]/55">
             Category:{" "}
-            <span className="font-medium capitalize">{details.category}</span>
+            <span className="text-[#f4f0e8]/85">{details.category}</span>
           </p>
         </div>
       </div>
-      <ToastContainer
-        position="top-left"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </div>
+
+    </section>
   );
 };
 
