@@ -1,214 +1,107 @@
-// import { useState } from "react";
-// import { useSelector } from "react-redux";
-// import { Link, useNavigate } from "react-router-dom";
-// import { FiShoppingCart } from "react-icons/fi";
-// import { AiOutlineUser } from "react-icons/ai";
-// import { HiOutlineMenuAlt3 } from "react-icons/hi";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import logo from "../assets/react.svg";
-// import Navbar from "./newnav";
-
-// const Header = () => {
-//   const navigate = useNavigate();
-//   const [menu, setMenu] = useState(false);
-//   const productData = useSelector((state) => state.bazar.productData);
-//   // const userInfo = useSelector((state) => state.bazar.userInfo) || "";
-//   const handleNavigate = () => navigate("/");
-//   const handleNavigateCart = () => navigate("/cart");
-
-//   const NavItems = () => (
-//     <>
-//       <li className="text-lg font-bold px-4 py-2 rounded-md hover:text-gray-900 hover:bg-gray-600 transition-all duration-300 cursor-pointer">
-//         <Link to="/" onClick={() => setMenu(!menu)}>
-//           HOME
-//         </Link>
-//       </li>
-
-//       {/* Shop */}
-//       <li className="text-lg font-bold px-4 py-2 rounded-md hover:text-gray-900 hover:bg-gray-600 transition-all duration-300 cursor-pointer">
-//         <Link to="/shop" onClick={() => setMenu(!menu)}>
-//           SHOP
-//         </Link>
-//       </li>
-
-//       {/* User */}
-//       <li className="p-2 hover:bg-gray-600 rounded-full transition-all duration-300 cursor-pointer">
-//         <Link to="/login" onClick={() => setMenu(!menu)}>
-//           <AiOutlineUser className="w-6 h-6 text-gray-700" />
-//         </Link>
-//       </li>
-
-//       {/* Cart */}
-//       <li
-//         className="relative p-2 hover:bg-gray-600 rounded-full transition-all duration-300 cursor-pointer"
-//         onClick={() => {
-//           handleNavigateCart();
-//           setMenu(!menu);
-//         }}
-//       >
-//         <FiShoppingCart className="w-6 h-6 text-gray-700" />
-// {productData.length > 0 && (
-//           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-//             {productData.length}
-//           </span>
-//         )}
-//       </li>
-//     </>
-//   );
-
-//   return (
-//     <header className="fixed inset-x-0 top-0 z-10 bg-white/60 backdrop-blur-md shadow-md border-b border-white/30 rounded-lg">
-//       <div className="mx-auto px-4 sm:px-6 lg:px-8 border-b-2 rounded-lg">
-//         <div className="flex justify-between items-center h-16">
-//           {/* Logo */}
-//           <figure className="w-36 sm:w-44">
-//             <img
-//               onClick={handleNavigate}
-//               src={logo}
-//               alt="logo"
-//               className="w-fit cursor-pointer"
-//             />
-//           </figure>
-
-//           {/* Desktop Nav */}
-//           <nav className="hidden md:block">
-//             <ul className="flex items-center space-x-6">{<NavItems />}</ul>
-//           </nav>
-
-//           {/* Mobile Menu Button */}
-//           {/* <button className="md:hidden p-2 rounded-full hover:bg-gray-100 transition">
-//             <HiOutlineMenuAlt3
-//               className="h-6 w-6 text-gray-700"
-//               onClick={() => setMenu(!menu)}
-//             />
-//           </button> */}
-//           <div className="md:hidden p-2  hover:bg-gray-800 transition ">
-//             <Navbar />
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Mobile Nav */}
-//       {menu && (
-//         <nav className="md:hidden">
-//           <ul className="flex flex-col items-center space-y-4 py-4 bg-white/90 backdrop-blur-md shadow-md rounded-b-lg">
-//             {<NavItems />}
-//           </ul>
-//         </nav>
-//       )}
-
-//       {/* Toast */}
-//       <ToastContainer
-//         position="top-left"
-//         autoClose={2000}
-//         hideProgressBar={false}
-//         closeOnClick
-//         rtl={false}
-//         draggable
-//         theme="dark"
-//       />
-//     </header>
-//   );
-// };
-
-// export default Header;
-
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import logo from "/m-icon.svg";
-import Navbar from "./newnav";
 import { FiShoppingCart } from "react-icons/fi";
 import { AiOutlineUser } from "react-icons/ai";
-import { Link } from "react-router-dom";
-import { MdOutlineLightMode } from "react-icons/md";
-import { useState } from "react";
-import { MdDarkMode } from "react-icons/md";
+import { MdDarkMode, MdOutlineLightMode } from "react-icons/md";
+import Navbar from "./newnav";
+import { APP_TOAST_CONTAINER_ID } from "../hooks/useAppToast";
 
 const Header = ({ dark, handleclick }) => {
   const navigate = useNavigate();
   const productData = useSelector((state) => state.bazar.productData);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [cartPulse, setCartPulse] = useState(false);
+  const prevCartCount = useRef(productData.length);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (productData.length > prevCartCount.current) {
+      setCartPulse(true);
+      const timeout = setTimeout(() => setCartPulse(false), 500);
+      prevCartCount.current = productData.length;
+      return () => clearTimeout(timeout);
+    }
+
+    prevCartCount.current = productData.length;
+  }, [productData.length]);
+
   const handleNavigate = () => navigate("/");
   const handleNavigateCart = () => navigate("/cart");
-  // const [dark, setdark] = useState(false);
-  // const handleclick = () => {
-  //   setdark((prev) => !prev);
-  // };
-  return (
-    <header
-      className={`fixed inset-x-0 top-0 z-10 ${
-        !dark ? "bg-white/60" : "bg-gray-900"
-      } backdrop-blur-sm shadow-md border-b border-white/30 rounded-lg`}
-    >
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 border-b-2 rounded-lg">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <figure className="w-36 sm:w-44">
-            <img
-              onClick={handleNavigate}
-              src={logo}
-              alt="logo"
-              className="w-fit cursor-pointer h-15 bg-radial from-blue-300 via-violet-200 to-violet-50  rounded-full mt-0.5 "
-            />
-          </figure>
 
-          {/* Desktop Nav */}
+  const navLinkClasses =
+    "relative text-[11px] uppercase tracking-[0.32em] text-[#f4f0e8]/85 transition-colors duration-300 hover:text-[#c9a96e] after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#c9a96e] after:transition-transform after:duration-300 hover:after:scale-x-100";
+
+  return (
+    <header className="fixed inset-x-0 top-0 z-40 px-3 sm:px-6">
+      <div
+        className={`mx-auto mt-2 max-w-[1320px] transition-all duration-500 ${
+          isScrolled
+            ? "h-16 border border-[#f4f0e8]/10 bg-[#101010]/78 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+            : "h-20 border border-transparent bg-transparent"
+        }`}
+      >
+        <div className="flex h-full items-center justify-between px-4 md:px-8">
+          <button
+            onClick={handleNavigate}
+            className="font-display text-[26px] tracking-[0.18em] text-[#f4f0e8] transition-colors hover:text-[#c9a96e]"
+          >
+            eBazaar
+          </button>
+
           <nav className="hidden md:block">
-            <ul className="flex items-center space-x-10">
-              <div>
-                <button onClick={handleclick}>
+            <ul className="flex items-center gap-8">
+              <li>
+                <button
+                  onClick={handleclick}
+                  className="text-[#f4f0e8]/80 transition-colors hover:text-[#c9a96e]"
+                  aria-label="Toggle theme"
+                >
                   {dark ? (
-                    <MdOutlineLightMode
-                      className={`h-6 w-6 cursor-pointer ${
-                        dark ? "text-white" : null
-                      }`}
-                    />
+                    <MdOutlineLightMode className="h-5 w-5" />
                   ) : (
-                    <MdDarkMode className="h-6 w-6 cursor-pointer " />
+                    <MdDarkMode className="h-5 w-5" />
                   )}
                 </button>
-              </div>
+              </li>
               <li>
-                <Link
-                  to="/"
-                  className={`text-lg font-bold hover:text-gray-800 transition ${
-                    dark ? "text-white" : null
-                  }`}
-                >
-                  HOME
+                <Link to="/" className={navLinkClasses}>
+                  Home
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/shop"
-                  className={`text-lg font-bold hover:text-gray-800 transition ${
-                    dark ? "text-white" : null
-                  }`}
-                >
-                  SHOP
+                <Link to="/shop" className={navLinkClasses}>
+                  Shop
                 </Link>
               </li>
               <li>
                 <Link
                   to="/login"
-                  className={`text-lg font-bold hover:text-gray-800  ${
-                    dark ? "text-white" : null
-                  }`}
+                  className="text-[#f4f0e8]/85 transition-colors duration-300 hover:text-[#c9a96e]"
                 >
-                  <AiOutlineUser className="w-6 h-6" />
+                  <AiOutlineUser className="h-5 w-5" />
                 </Link>
               </li>
               <li
                 onClick={handleNavigateCart}
-                className={` cursor-pointer text-lg font-bold hover:text-gray-800 transition ${
-                  dark ? "text-white" : null
-                }`}
+                className="relative cursor-pointer text-[#f4f0e8]/85 transition-colors duration-300 hover:text-[#c9a96e]"
               >
-                <FiShoppingCart className="w-6 h-6" />
+                <FiShoppingCart
+                  className={`h-5 w-5 ${cartPulse ? "animate-bounce" : ""}`}
+                />
                 {productData.length > 0 && (
-                  <span className="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -right-2.5 -top-2 inline-flex h-4 min-w-4 items-center justify-center border border-[#c9a96e] bg-[#0a0a0a] px-1 text-[10px] font-semibold text-[#c9a96e]">
                     {productData.length}
                   </span>
                 )}
@@ -216,16 +109,15 @@ const Header = ({ dark, handleclick }) => {
             </ul>
           </nav>
 
-          {/* Mobile Hamburger Menu */}
           <div className="md:hidden">
-            <Navbar />
+            <Navbar dark={dark} handleclick={handleclick} />
           </div>
         </div>
       </div>
 
-      {/* Toast */}
       <ToastContainer
-        position="top-left"
+        containerId={APP_TOAST_CONTAINER_ID}
+        position="top-right"
         autoClose={2000}
         hideProgressBar={false}
         closeOnClick

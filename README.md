@@ -114,8 +114,8 @@ Persistence:
 - Used for Google sign-in/out in `src/pages/Login.jsx`
 
 ### Payment API
-- Frontend posts to: `https://eBazaar-api-backend/pay`
-- Payload currently: `{ amount: totalAmt * 100, token }`
+- Frontend posts to: `${VITE_API_BASE_URL}/pay`
+- Payload currently: `{ token, items: [{ productId, quantity }] }`
 - This backend is required for successful checkout and is not part of this repo
 
 ## 8. Environment Variables
@@ -123,17 +123,19 @@ Persistence:
 Create a `.env` at repository root:
 
 ```bash
+VITE_API_BASE_URL=your_backend_base_url
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
 VITE_APP_FIREBASE_API_KEY=your_key
 VITE_APP_FIREBASE_AUTH_DOMAIN=your_domain
 VITE_APP_FIREBASE_PROJECT_ID=your_project_id
 VITE_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_APP_FIREBASE_APP_ID=your_app_id
-
-# Current code expects this exact name in firebase.config.js:
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 ```
-
-Note: with Vite, variables usually use `VITE_` prefix. Current code uses `REACT_APP_FIREBASE_MESSAGING_SENDER_ID`; either keep this variable name for now or refactor code to `VITE_APP_FIREBASE_MESSAGING_SENDER_ID`.
+You can copy `.env.example` and fill in real values:
+- `cp .env.example .env` (Linux/macOS)
+- `Copy-Item .env.example .env` (PowerShell)
 
 ## 9. How To Start Everything
 
@@ -298,10 +300,6 @@ eBazaar/
 ## 12. Known Gaps and Technical Debt (Current State)
 
 - README before this update was out of sync with actual codebase
-- `firebase.config.js` logs API key in console (should be removed)
-- Mixed env naming (`REACT_APP_...` inside Vite project)
-- Stripe public test key hardcoded in `src/pages/Cart.jsx`
-- Payment backend URL hardcoded (should use env-based API base URL)
 - No loading/error/empty states for product API failures
 - No protected routes for checkout/account pages
 - No backend order lifecycle in this repo

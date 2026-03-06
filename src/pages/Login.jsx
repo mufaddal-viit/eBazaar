@@ -1,27 +1,29 @@
-import React from "react";
+import { useState } from "react";
 import {
   GoogleAuthProvider,
   getAuth,
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { addUser, removeUser } from "../redux/bazarSlice";
-import { useNavigate } from "react-router-dom";
 import app from "../firebase.config";
-import { useOutletContext } from "react-router-dom";
+import useAppToast from "../hooks/useAppToast";
 
 const Login = () => {
-  const { dark } = useOutletContext(); // Get the dark mode state
+  const { dark } = useOutletContext();
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userInfo = useSelector((state) => state.bazar.userInfo);
+  const { success, error } = useAppToast();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const handleGoogleLogin = (e) => {
-    e.preventDefault();
+  const handleGoogleLogin = (event) => {
+    event.preventDefault();
+    setIsSigningIn(true);
     signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
@@ -37,61 +39,72 @@ const Login = () => {
           navigate("/");
         }, 1500);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch((authError) => {
+        const fallbackMessage = "Google sign-in failed. Please try again.";
+        const message = authError?.message || fallbackMessage;
+        error(message);
+      })
+      .finally(() => {
+        setIsSigningIn(false);
       });
   };
 
   const handleSignOut = () => {
     signOut(auth).then(() => {
-      toast.success("Signed Out Successfully");
+      success("Signed out successfully");
       dispatch(removeUser());
     });
   };
 
   return (
-    <div
-      className={`flex items-center justify-center min-h-screen ${
-        !dark ? "bg-gray-300" : "bg-gray-700"
+    <section
+      className={`relative flex min-h-screen items-center justify-center px-4 pt-24 ${
+        dark ? "bg-[#0a0a0a]" : "bg-[#151515]"
       }`}
     >
-      <div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
-        <h2 className=" text-center mt-6 text-3xl font-extrabold text-gray-900">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_top,_rgba(201,169,110,0.14),_transparent_72%)]" />
+
+      <div className="w-full max-w-lg border border-[#f4f0e8]/18 bg-[#101010]/80 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.5)]">
+        <p className="text-center text-[11px] uppercase tracking-[0.34em] text-[#c9a96e]">
+          Account
+        </p>
+        <h2 className="mt-4 text-center font-display text-4xl text-[#f4f0e8]">
           Welcome to eBazaar
         </h2>
+
         {!userInfo ? (
-          <div className="mt-8 space-y-6">
+          <div className="mt-10">
             <button
               onClick={handleGoogleLogin}
-              className=" text-2xl w-full flex items-center justify-center px-4 py-2 border border-transparent font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isSigningIn}
+              className="group relative w-full overflow-hidden border border-[#c9a96e] px-4 py-3 text-[11px] uppercase tracking-[0.25em] text-[#f4f0e8]"
             >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 0C4.477 0 0 4.477 0 10c0 4.411 2.865 8.138 6.839 9.465.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C17.137 18.135 20 14.411 20 10c0-5.523-4.477-10-10-10z" />
-              </svg>
-              Sign in with Google
+              <span className="absolute inset-0 -translate-x-full bg-[#c9a96e] transition-transform duration-500 group-hover:translate-x-0" />
+              <span className="relative z-10 flex items-center justify-center gap-2 transition-colors duration-500 group-hover:text-[#0a0a0a]">
+                <svg viewBox="0 0 48 48" className="h-4 w-4 fill-current">
+                  <path d="M44.5 20H24v8.5h11.8C34.7 33.9 30 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 3l6.1-6.1C34.4 4.5 29.5 2.5 24 2.5 12.4 2.5 3 11.9 3 23.5S12.4 44.5 24 44.5 45 35.6 45 24c0-1.3-.2-2.7-.5-4z" />
+                </svg>
+                {isSigningIn ? "Signing In..." : "Sign In With Google"}
+              </span>
             </button>
           </div>
         ) : (
-          <div>
+          <div className="mt-8 space-y-5 text-center">
             {userInfo.name && (
-              <p className="text-blue-600 font-medium text-center pb-2.5 text-2xl capitalize">
+              <p className="font-display text-3xl capitalize text-[#f4f0e8]">
                 {userInfo.name.toLowerCase()}
               </p>
             )}
             <button
               onClick={handleSignOut}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm  font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-2xl"
+              className="w-full border border-[#c86060] px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-[#c86060] transition hover:bg-[#c86060] hover:text-[#0a0a0a]"
             >
               Sign Out of eBazaar
             </button>
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { Link, useOutletContext } from "react-router-dom";
 import {
@@ -7,129 +6,110 @@ import {
   deleteItem,
   increamentQuantity,
 } from "../redux/bazarSlice";
-import { ToastContainer, toast } from "react-toastify";
+import useAppToast from "../hooks/useAppToast";
 
 const CartItem = () => {
-  const { dark } = useOutletContext(); // Get the dark mode state
+  const { dark } = useOutletContext();
   const productData = useSelector((state) => state.bazar.productData);
   const dispatch = useDispatch();
+  const { error } = useAppToast();
 
   return (
-    <div className="w-full md:pr-14 h-full flex flex-col gap-4 sm:border-r-2">
-      <h2
-        className={`text-xl font-titleFont border-b-2 py-2 ${
-          dark ? "text-white" : "text-gray-700"
-        }`}
-      >
+    <div className="flex h-full w-full flex-col gap-4">
+      <h2 className="border-b border-[#f4f0e8]/15 pb-3 font-display text-3xl text-[#f4f0e8]">
         Your Shopping Cart
       </h2>
 
       {productData.length > 0 ? (
         productData.map((product) => (
-          <div
-            className={`border-b-2 pb-4 flex gap-4 p-1 ${
-              dark ? "border-gray-600" : "border-gray-300"
-            }`}
+          <article
+            className="grid gap-4 border-b border-[#f4f0e8]/12 py-4 sm:grid-cols-[110px_minmax(0,1fr)] md:grid-cols-[130px_minmax(0,1fr)]"
             key={product._id}
           >
-            <figure className="w-32 md:w-40">
+            <figure className="overflow-hidden border border-[#f4f0e8]/15">
               <img
-                className="max-w-full block rounded-md object-cover"
+                className="h-full w-full object-cover"
                 src={product.image}
-                alt="productImg"
+                alt={product.title}
               />
             </figure>
-            <div
-              className={`flex flex-col w-1/2 gap-4 py-3 ${
-                dark ? "text-white" : "text-gray-700"
-              }`}
-            >
-              <h2 className="text-lg md:text-2xl">{product.title}</h2>
-              <p className="md:text-lg font-bold">
-                ${product.price * product.quantity}
-              </p>
-              <div className="flex gap-3 w-fit items-center">
+
+            <div className="flex flex-col justify-between gap-4">
+              <div>
+                <h3 className="font-display text-2xl leading-tight text-[#f4f0e8]">
+                  {product.title}
+                </h3>
+                <p className="mt-2 font-mono text-lg text-[#c9a96e]">
+                  ${(product.price * product.quantity).toFixed(2)}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 border border-[#f4f0e8]/20 px-3 py-2">
+                  <button
+                    className="h-7 w-7 border border-[#f4f0e8]/35 text-sm text-[#f4f0e8] transition hover:border-[#c9a96e] hover:text-[#c9a96e]"
+                    onClick={() =>
+                      dispatch(
+                        decrementQuantity({
+                          _id: product._id,
+                          title: product.title,
+                          image: product.image,
+                          price: product.price,
+                          quantity: 1,
+                          description: product.description,
+                        })
+                      )
+                    }
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center font-mono text-sm text-[#f4f0e8]">
+                    {product.quantity}
+                  </span>
+                  <button
+                    className="h-7 w-7 border border-[#f4f0e8]/35 text-sm text-[#f4f0e8] transition hover:border-[#c9a96e] hover:text-[#c9a96e]"
+                    onClick={() =>
+                      dispatch(
+                        increamentQuantity({
+                          _id: product._id,
+                          title: product.title,
+                          image: product.image,
+                          price: product.price,
+                          quantity: 1,
+                          description: product.description,
+                        })
+                      )
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+
                 <button
-                  className={`border h-8 font-bold rounded text-lg flex items-center justify-center p-2.5 cursor-pointer duration-300
-                    ${
-                      dark
-                        ? "hover:bg-white hover:text-black border-white"
-                        : "hover:bg-gray-700 hover:text-white border-gray-700"
-                    } active:bg-black`}
-                  onClick={() =>
-                    dispatch(
-                      decrementQuantity({
-                        _id: product._id,
-                        title: product.title,
-                        image: product.image,
-                        price: product.price,
-                        quantity: 1,
-                        description: product.description,
-                      })
-                    )
-                  }
+                  className="border border-[#c86060] px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-[#c86060] transition hover:bg-[#c86060] hover:text-[#090909]"
+                  onClick={() => {
+                    dispatch(deleteItem(product._id));
+                    error(`${product.title} is removed`);
+                  }}
                 >
-                  -
-                </button>
-                <span className="font-bold text-xl">{product.quantity}</span>
-                <button
-                  className={`border h-8 font-bold rounded text-lg flex items-center justify-center px-2 cursor-pointer duration-300
-                    ${
-                      dark
-                        ? "hover:bg-white hover:text-black border-white"
-                        : "hover:bg-gray-700 hover:text-white border-gray-700"
-                    } active:bg-black`}
-                  onClick={() =>
-                    dispatch(
-                      increamentQuantity({
-                        _id: product._id,
-                        title: product.title,
-                        image: product.image,
-                        price: product.price,
-                        quantity: 1,
-                        description: product.description,
-                      })
-                    )
-                  }
-                >
-                  +
+                  Remove
                 </button>
               </div>
-              <button
-                className="bg-red-500 text-white py-2 mt-2 w-16 md:w-20 text-xs md:text-sm rounded hover:bg-transparent
-                border border-red-500 hover:text-red-500 transition-all duration-200"
-                onClick={() => {
-                  dispatch(deleteItem(product._id));
-                  toast.error(`${product.title} is removed`);
-                }}
-              >
-                Remove
-              </button>
             </div>
-          </div>
+          </article>
         ))
       ) : (
-        <div className="h-full w-full">
-          <div className="w-fit">
-            <Link to="/">
-              <div
-                className={`flex items-center gap-1 transition-all duration-300 hover:scale-110 ${
-                  dark
-                    ? "text-gray-400 hover:text-white"
-                    : "text-gray-400 hover:text-black"
-                }`}
-              >
-                <span className="text-2xl">
-                  <HiOutlineArrowLeft />
-                </span>
-                <p className="text-2xl font-bold">Go Shopping</p>
-              </div>
-            </Link>
-          </div>
-
+        <div className="grid min-h-[260px] place-content-center text-center">
+          <Link
+            to="/"
+            className="mb-6 inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.3em] text-[#f4f0e8]/60 transition hover:text-[#c9a96e]"
+          >
+            <HiOutlineArrowLeft className="h-4 w-4" />
+            Go Shopping
+          </Link>
           <p
-            className={`mt-10 w-full h-full grid place-content-center italic transition-all duration-300 hover:scale-110 ${
-              dark ? "text-gray-300" : "text-gray-400"
+            className={`font-display text-3xl ${
+              dark ? "text-[#f4f0e8]/50" : "text-[#f4f0e8]/45"
             }`}
           >
             Your Cart is Empty
@@ -137,18 +117,6 @@ const CartItem = () => {
         </div>
       )}
 
-      <ToastContainer
-        position="top-left"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
     </div>
   );
 };
